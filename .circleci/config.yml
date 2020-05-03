@@ -7,16 +7,9 @@ machine:
   node:
     version: 8.2.1
 jobs:
-  dependencies:
-    pre:
-      - ./bin/setup
-  test:
-    post:
-      - bundle exec jekyll build
-      - bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
-
-  deployment:
-    production:
-      branch: master
-      commands:
-        - ./bin/automated
+  build:
+    steps:
+        - run: ./bin/setup
+        - run: bundle exec jekyll build
+        - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
+        - run: ./bin/automated
