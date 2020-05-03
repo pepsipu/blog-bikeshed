@@ -15,6 +15,7 @@ jobs:
       - checkout
       - run: gem install bundler
       - run: npm install -g n
+      - run: n stable
       - run: ./bin/setup
       - run: bundle exec jekyll build
       - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
