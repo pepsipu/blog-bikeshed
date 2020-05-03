@@ -1,21 +1,20 @@
 executors:
-  machine:
+  docker:
+    - image: circleci/node:8.0
     environment:
       USER_NAME: pepsipu
       USER_EMAIL: pokeso123@hotmail.com
     ruby:
       version: 2.4.1
-    node:
-      version: 8.2.1
 
 jobs:
   build:
-    executor: machine
+    executor: docker
     steps:
       - checkout
       - run: sudo ls
       - run: gem install bundler
-      - run: npm install -g n
+      - run: sudo npm install -g n
       - run: sudo n stable
       - run: ./bin/setup
       - run: bundle exec jekyll build
