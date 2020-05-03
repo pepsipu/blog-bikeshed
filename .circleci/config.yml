@@ -1,5 +1,3 @@
-version: 2
-
 machine:
   environment:
     USER_NAME: pepsipu
@@ -8,18 +6,17 @@ machine:
     version: 2.4.1
   node:
     version: 8.2.1
+jobs:
+  dependencies:
+    pre:
+      - ./bin/setup
+  test:
+    post:
+      - bundle exec jekyll build
+      - bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
 
-dependencies:
-  pre:
-    - ./bin/setup
-
-test:
-  post:
-    - bundle exec jekyll build
-    - bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
-
-deployment:
-  production:
-    branch: master
-    commands:
-      - ./bin/automated
+  deployment:
+    production:
+      branch: master
+      commands:
+        - ./bin/automated
