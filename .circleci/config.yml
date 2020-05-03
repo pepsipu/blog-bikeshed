@@ -13,9 +13,10 @@ jobs:
     executor: machine
     steps:
       - checkout
+      - run: sudo ls
       - run: gem install bundler
       - run: npm install -g n
-      - run: n stable
+      - run: sudo n stable
       - run: ./bin/setup
       - run: bundle exec jekyll build
       - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
