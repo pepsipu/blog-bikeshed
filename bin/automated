@@ -27,8 +27,8 @@ mv _site/* .
 rm -R _site/
 
 # Push to gh-pages.
-git config user.name "$USER_NAME"
-git config user.email "$USER_EMAIL"
+git config user.name "pepsipu"
+git config user.email "pokeso123@hotmail.com"
 
 git add -fA
 git commit --allow-empty -m "$(git log -1 --pretty=%B) [ci skip]"
