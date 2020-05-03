@@ -4,7 +4,7 @@ executors:
       USER_NAME: pepsipu
       USER_EMAIL: pokeso123@hotmail.com
     ruby:
-      version: 2.7.0
+      version: 2.4.1
     node:
       version: 8.2.1
 
@@ -13,6 +13,7 @@ jobs:
     executor: machine
     steps:
       - checkout
+      - run: gem install bundler
       - run: ./bin/setup
       - run: bundle exec jekyll build
       - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
