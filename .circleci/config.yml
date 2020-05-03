@@ -12,7 +12,8 @@ jobs:
   build:
     executor: machine
     steps:
-        - run: ./bin/setup
-        - run: bundle exec jekyll build
-        - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
-        - run: ./bin/automated
+      - checkout
+      - run: ./bin/setup
+      - run: bundle exec jekyll build
+      - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
+      - run: ./bin/automated
