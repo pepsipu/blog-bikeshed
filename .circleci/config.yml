@@ -1,6 +1,6 @@
 executors:
   docker:
-    - image: circleci/node:8.0
+    image: circleci/node:8.0
     environment:
       USER_NAME: pepsipu
       USER_EMAIL: pokeso123@hotmail.com
