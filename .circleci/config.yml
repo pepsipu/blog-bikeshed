@@ -1,17 +1,16 @@
 executors:
-  machine-executor:
-    machine:
-      environment:
-        USER_NAME: pepsipu
-        USER_EMAIL: pokeso123@hotmail.com
-      ruby:
-        version: 2.4.1
-      node:
-        version: 8.2.1
+  machine:
+    environment:
+      USER_NAME: pepsipu
+      USER_EMAIL: pokeso123@hotmail.com
+    ruby:
+      version: 2.4.1
+    node:
+      version: 8.2.1
 
 jobs:
   build:
-    executor: machine-executor
+    executor: machine
     steps:
         - run: ./bin/setup
         - run: bundle exec jekyll build
