@@ -12,6 +12,9 @@ jobs:
   build:
     executor: machine
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "a3:eb:d2:d8:2c:6b:37:7b:9a:1e:c1:4c:e0:ce:7e:4a"
       - checkout
       - run:
             name: Install node@6.2.2 (need right version for `yarn`)
