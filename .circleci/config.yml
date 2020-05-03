@@ -6,7 +6,7 @@ executors:
     ruby:
       version: 2.4.1
     node:
-      version: 8.0.0
+      version: 8.2.1
 
 jobs:
   build:
@@ -14,6 +14,7 @@ jobs:
     steps:
       - checkout
       - run: gem install bundler
+      - run: npm install -g n
       - run: ./bin/setup
       - run: bundle exec jekyll build
       - run: bundle exec htmlproofer ./_site --only-4xx --allow-hash-href
