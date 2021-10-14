@@ -41,7 +41,7 @@ This was put on display during the 2021 Spring Season, where spamming random tex
 
 The reoccurring theme with NCL challenges is that they are **guessy**. **Guessy**, is really, *really*, **really** bad for learning and frustrating for competitors, and it's why bigger CTFs have standards in place to catch challenges like this to ensure they don't show up in the final revision of the competition.
 
-A document, known as the "[CTF Design Guidelines](https://bit.ly/ctf-design)", has been made by top players from top teams from around the world to separate *good* challenges and *bad* challenges, and it's shame almost every challenge in NCL falls into the latter.
+A document, known as the "[CTF Design Guidelines](https://bit.ly/ctf-design)", has been made by top players from top teams from around the world to separate *good* challenges and *bad* challenges, and it's a shame almost every challenge in NCL falls into the latter.
 
 A factor that adds to the ambiguity of a challenge is the lack of a certain correct answer for many questions. There isn't a flag format for many questions, which can be fine, but in the context of NCL, is an absolute nightmare to deal with. We'll talk about this when we discuss accuracy in NCL.
 
@@ -66,7 +66,9 @@ Don't get me wrong! Some challenges in NCL are thought out and provide a wealth 
 
 ## Accuracy
 
-NCL has a concept seldom seen elsewhere in the CTF space, called "accuracy". Incorrect submissions will dock competitors accuracy, which although not used as a primary scoring method, is a tie breaking standard. This makes it a critical statistic for teams looking to win first place, as more than one team will gain the maximum number of points possible and will need to rely on their accuracy to keep or take the #1 spot.
+NCL has a concept seldom seen elsewhere in the CTF space, called "accuracy". Incorrect submissions will dock competitors accuracy, which although not used as a primary scoring method, is a tie breaking standard.
+
+This makes it a critical statistic for teams looking to win first place, as more than one team will gain the maximum number of points possible and will need to rely on their accuracy to keep or take the #1 spot.
 
 Unsurprisingly, this is really, *really*, bad idea.  
 
@@ -90,7 +92,7 @@ This just isn't a good learning environment, much less a good competitive one!
 
 ## $$$
 
-I had talked to some friends about doing NCL, and the first question they asked was "are there any prizes?". An understandable question, as prizes can be a pretty great motivation to learn new and exciting things about cybersecurity. 
+I talked to some friends about doing NCL, and the first question they asked was "are there any prizes?". An understandable question, as prizes can be a pretty great motivation to learn new and exciting things about cybersecurity. 
 
 My immediate thought was to say yes, but I actually didn't know. I'd always assumed bigger CTFs have prizes. To my surprise, a scan of the website showed no trace of possible winnings.
 
