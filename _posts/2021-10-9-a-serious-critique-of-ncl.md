@@ -7,7 +7,9 @@ tags: [ctf]
 ---
 
 ## Introduction
-I had heard about NCL through the grapevine at my high school in my sophomore year. I had played a variety of CTFs of many different formats, ranging from bog standard jeopardy style CTFs to DEFCON final's attack & defense. However, this was my first experience with "corporate CTF", CTF designed by a "cybersecurity" company. Even though it stood in stark contrast from the CTFs organized by institutions, other CTF teams, and large tech giants, my team and I played NCL's Spring Season of 2021 where we competed in the team game together. 
+I had heard about NCL through the grapevine at my high school in my sophomore year. I had played a variety of CTFs of many different formats, ranging from bog standard jeopardy style CTFs to DEFCON final's attack & defense.
+
+However, this was my first experience with "corporate CTF", CTF designed by a "cybersecurity" company. Even though it stood in stark contrast from the CTFs organized by institutions, other CTF teams, and large tech giants, my team and I played NCL's Spring Season of 2021 where we competed in the team game together. 
 
 Although we won first place, none of us will be returning for NCL for the time being.
 
@@ -27,7 +29,9 @@ The crux of many challenges and the infrastructure they are supported on fail is
 
 Challenges need to teach the user something. CTF is all about learning to solve a challenge you know nothing about, rather than the traditional format of most competitions where you're expected to bring previously learned knowledge into the ring. However, what NCL teaches is close to useless in a overwhelming majority of challenges.
 
-This becomes extremely apparent in the "Cryptography" category where players guess formats and and *especially* tools used to encode some secret data. I think having some data encoding challenges is cool! It teaches a lot about how information is communicated and utilized in computer science, something very important for beginners. However, a majority of these "forensics" challenges boils down to downloading and trying as many tools as you could scrape together, where their difficulty was proportional to the obscurity of the tool.
+This becomes extremely apparent in the "Cryptography" category where players guess formats and and *especially* tools used to encode some secret data. I think having some data encoding challenges is cool! It teaches a lot about how information is communicated and utilized in computer science, something very important for beginners.
+
+However, a majority of these "forensics" challenges boils down to downloading and trying as many tools as you could scrape together, where their difficulty was proportional to the obscurity of the tool.
 
 Where's the problem solving? Isn't that what CTF is supposed to teach?
 
@@ -37,7 +41,7 @@ This was put on display during the 2021 Spring Season, where spamming random tex
 
 The reoccurring theme with NCL challenges is that they are **guessy**. **Guessy**, is really, *really*, **really** bad for learning and frustrating for competitors, and it's why bigger CTFs have standards in place to catch challenges like this to ensure they don't show up in the final revision of the competition.
 
-A document, known as the "(CTF Design Guidelines)[https://bit.ly/ctf-design]", has been made by top players from top teams from around the world to separate *good* challenges and *bad* challenges, and it's shame almost every challenge in NCL falls into the latter.
+A document, known as the "[CTF Design Guidelines](https://bit.ly/ctf-design)", has been made by top players from top teams from around the world to separate *good* challenges and *bad* challenges, and it's shame almost every challenge in NCL falls into the latter.
 
 A factor that adds to the ambiguity of a challenge is the lack of a certain correct answer for many questions. There isn't a flag format for many questions, which can be fine, but in the context of NCL, is an absolute nightmare to deal with. We'll talk about this when we discuss accuracy in NCL.
 
@@ -69,6 +73,7 @@ Unsurprisingly, this is really, *really*, bad idea.
 ### Accuracy Inhibits Learning
 
 The standard for a majority of CTFs is to use time as the primary tiebreaker, for good reason. The concept of accuracy, unfortunately, violates the first and third pillars in the feedback of learning. If you're unfamiliar with this concept, tylerni7 from Carnegie Mellon's CTF team [wrote a brilliant article on "why CTF"](https://pwning.net/2014/04/01/why-ctf/), describing why CTFs are so great at teaching the field of computer science and cybersecurity.
+
 > If you read about the importance of feedback in learning, you’ll notice a few things CTFs do right: feedback is immediate, feedback is individual (both on a problem and team basis), and feedback isn’t final (if you get a flag wrong, try, try again).
 
 Part of problem solving is utilizing verification oracles to make more educated decisions based off your previous ones! The ability to confirm or throw out your guesses is integral to understanding how systems work and how to break them, but NCL's accuracy score impedes on the development of that skill.
@@ -103,10 +108,12 @@ Companies getting into CTF is undoubtedly a good thing, as it allows CTF to beco
 
 ## Conclusion
 
-There is a clear disconnect between NCL and the expectations of a CTF. NCL fails to teach a quarter of what a high school run CTF like angstromCTF or hsCTF could. From what I understand, Cyberskyline didn't reach out to a single prominent CTF team, ending up adding bogus categories like password cracking and implemented things like accuracy.
+There is a clear disconnect between NCL and the expectations of a CTF. NCL fails to teach a quarter of what a high school run CTF like angstromCTF or hsCTF could. From what I understand, Cyberskyline didn't reach out to a single prominent CTF team, ending up adding bogus categories like password cracking and implemented scoring factors like accuracy.
 
-I don't think NCL was rushed. The infrastructure, although many design decisions raise eyebrows (looking at you, integrated terminals), is clearly well made and much time has been invested in the event. It's important that NCL is given the benefit of the doubt, and that running a CTF is hard and mistakes are bound to happen. Rather, I hope NCL can grow from where it is right now. 
+A lot of inspiration can be taken from googleCTF. Working with players from top teams like LiveOverflow and Gynvael as well as consulting top teams like DragonSector allowed Google to provide an authentic CTF experience filled with learning opportunity and fantastic challenges.
 
-As always, you can reach out to me at pepsipu@pepsipu.com. My team, DiceGang, would be happy to help.
+I don't think NCL was rushed. The infrastructure, although many design decisions raise eyebrows (looking at you, integrated terminals), is clearly well made and much time has been invested in the event. It's important that NCL is given the benefit of the doubt, and that running a CTF is hard and mistakes are bound to happen. Rather, I hope NCL can grow from where it is right now.
 
-- pepsipu
+As always, you can reach out to me at pepsipu@pepsipu.com for comments or concerns.
+
+\- pepsipu
