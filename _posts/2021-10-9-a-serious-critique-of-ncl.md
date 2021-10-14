@@ -81,5 +81,32 @@ This affects far more than just competitive teams, but also teams on local leade
 
 This leads to ridiculous guessing games where teams, like ours, have to ensure our answer is right before submission, often playing with ambiguity and educated guesses which may fall flat for reasons totally outside our control.
 
-
 This just isn't a good learning environment, much less a good competitive one!
+
+## $$$
+
+I had talked to some friends about doing NCL, and the first question they asked was "are there any prizes?". An understandable question, as prizes can be a pretty great motivation to learn new and exciting things about cybersecurity. 
+
+My immediate thought was to say yes, but I actually didn't know. I'd always assumed bigger CTFs have prizes. To my surprise, a scan of the website showed no trace of possible winnings.
+
+That's alright. Not having prizes is *ok*, and a requirement to have prizes would shut down many smaller CTFs who cannot afford it. However, most people were hyped about googleCTF because of the insane prizes and trips, like competing on site in Elevat8 or Hackceler8 (you can watch our match [here](https://capturetheflag.withgoogle.com/hackceler8) 😉).
+
+### The Role of a Company in CTF
+
+Corporations can offer a whole lot more to CTF than independent teams can, as they have financial backing that many cannot match. This isn't limited to prizes, the infrastructure can be a whole lot faster and well designed, communicate with top CTF teams to ask them to write challenges or oversee the event, or just get the word out about the event.
+
+Cyberskyline checks a lot of these boxes! I don't think its fair to assume NCL is a cash grab because they have registration fees or don't offer prizes, as Cyberskyline may not be familiar with what a real CTF looks like.
+
+Companies getting into CTF is undoubtedly a good thing, as it allows CTF to become more accessible to new groups of people. Though, looking at NCL, the question becomes:
+
+**What happened?**
+
+## Conclusion
+
+There is a clear disconnect between NCL and the expectations of a CTF. NCL fails to teach a quarter of what a high school run CTF like angstromCTF or hsCTF could. From what I understand, Cyberskyline didn't reach out to a single prominent CTF team, ending up adding bogus categories like password cracking and implemented things like accuracy.
+
+I don't think NCL was rushed. The infrastructure, although many design decisions raise eyebrows (looking at you, integrated terminals), is clearly well made and much time has been invested in the event. It's important that NCL is given the benefit of the doubt, and that running a CTF is hard and mistakes are bound to happen. Rather, I hope NCL can grow from where it is right now. 
+
+As always, you can reach out to me at pepsipu@pepsipu.com. My team, DiceGang, would be happy to help.
+
+- pepsipu
