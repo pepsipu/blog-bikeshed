@@ -6,6 +6,8 @@
 set -e
 
 echo "Started deploying"
+git config --global user.name "pepsipu"
+git config --global user.email "pokeso123@hotmail.com"
 
 # Checkout gh-pages branch.
 if [ `git branch | grep gh-pages` ]
