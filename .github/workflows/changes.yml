@@ -18,5 +18,8 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.5
-      - name: setup stuff
+          bundler-cache: true
+      - name: setup env
         run: npm run setup
+      - name: build and publish changes
+        run: npm run deploy
