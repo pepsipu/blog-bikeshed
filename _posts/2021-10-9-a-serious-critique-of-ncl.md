@@ -149,7 +149,7 @@ Companies getting into CTF is undoubtedly a good thing as it allows CTF to becom
 
 There is a clear disconnect between the NCL and the expectations of a CTF. The NCL fails to teach a quarter of what a high school run CTF like angstromCTF or hsCTF could. From what I understand, Cyber Skyline didn't reach out to a single prominent CTF team, ending up adding bogus categories like password cracking and implemented scoring factors like accuracy.
 
-A lot of inspiration can be taken from GoogleCTF. Working with players from top teams like LiveOverflow and Gynvael as well as consulting top teams like DragonSector allowed Google to provide an authentic CTF experience filled with learning opportunity and fantastic challenges. SquareCTF by Square, 0ctf by Tencent, and TenableCTF by Tenable are also corporate CTFs which Cyber Skyline could learn a lot from. 
+A lot of inspiration can be taken from GoogleCTF. Working with players from top teams like LiveOverflow and Gynvael as well as consulting top teams like DragonSector allowed Google to provide an authentic CTF experience filled with learning opportunity and fantastic challenges. SquareCTF by Square and 0ctf by Tencent are also corporate CTFs which Cyber Skyline could learn a lot from. 
 
 I don't think NCL was rushed. The infrastructure, although many design decisions raise eyebrows (looking at you, integrated terminals), is clearly well made and much time has been invested in the event. It's important that NCL is given the benefit of the doubt, and that running a CTF is hard and mistakes are bound to happen. Rather, I hope NCL can grow from where it is right now.
 
