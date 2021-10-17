@@ -9,7 +9,7 @@ tags: [ctf]
 ## Introduction
 I had heard about NCL through the grapevine at my high school in my sophomore year. I had played a variety of CTFs of many different formats, ranging from bog standard jeopardy style CTFs to DEFCON final's attack & defense.
 
-However, this was my first experience with a CTF advertised as a "Cyber Leauge". Even though it stood in stark contrast from the CTFs organized by institutions, other CTF teams, and large tech giants, my team and I played NCL's Spring Season of 2021 where we competed in the team game together. 
+However, this was my first experience with a CTF advertised as a "Cyber League". Even though it stood in stark contrast from the CTFs organized by institutions, other CTF teams, and large tech giants, my team and I played NCL's Spring Season of 2021 where we competed in the team game together. 
 
 Although we won first place, none of us will be returning for NCL for the time being.
 
@@ -36,7 +36,7 @@ This becomes extremely apparent in the "Cryptography" category where players gue
 
 However, a majority of these "forensics" challenges boils down to downloading and trying as many tools as you could scrape together, where their difficulty was proportional to the obscurity of the tool.
 
-There are *so* many examples of this. Bubba Gump, a challenge which consistened of a single image, was an example of this "guess the tool" format.
+There are *so* many examples of this. Bubba Gump, a challenge which consisted of a single image, was an example of this "guess the tool" format.
 
 Hidden was a crypto challenge of the *same exact format*. Just an image, but guess another tool this time. 
 
@@ -139,7 +139,7 @@ That's alright. Not having prizes is *ok*, and a requirement to have prizes woul
 
 Corporations can offer a whole lot more to CTF than independent teams can as they have financial backing that many cannot match. This isn’t limited to prizes; the infrastructure can be a whole lot faster and better designed. They have the funds to communicate with top CTF teams to ask them to write challenges or oversee the event, or just get the word out about the CTF.
 
-Cyber Skyline checks a lot of these boxes! I don't think its fair to assume NCL is a cash grab because they have registration fees or don't offer prizes. Rather, the NCL not offering prizes and having registration fees is symbolic for their detatchment from normal CTF customs.
+Cyber Skyline checks a lot of these boxes! I don't think its fair to assume NCL is a cash grab because they have registration fees or don't offer prizes. Rather, the NCL not offering prizes and having registration fees is symbolic for their detachment from normal CTF customs.
 
 Companies getting into CTF is undoubtedly a good thing as it allows CTF to become more accessible to new groups of people. Though, looking at NCL, the question becomes:
 
