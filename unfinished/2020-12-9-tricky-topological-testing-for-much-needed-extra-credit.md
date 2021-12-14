@@ -70,8 +70,18 @@ Let's design this algorithm. First, consider two intersecting paths.
 
 _Red is a DD pair, blue is some path_
 
-This is no good! How can we "fix" the blue line? Well, since we _know_, that, by the definition of a DD pair, there is a finite space between the points and the border. If we bring the blue line super close to the red one, infinitely close, then hug the red line all the way around the line, through that finite space, all the way back to the point of intersection, we'll be able to fix a line. It's a confusing process, so it'll make more sense with a visual.
+This is no good! How can we "fix" the blue line? Well, since it's a DD pair and there's a finite amount of space between the point and the border, maybe we can curl the blue line around the red one? If we bring the blue line super close to the red one, infinitely close, then hug the red line all the way around the line, all the way back to the point of intersection, we'll be able to fix a line. It's a confusing process, so it'll make more sense with a visual.
 
-We can prove that wrapping will _always_ turn a path intersecting a DD path into a non-intersecting path. Because lines
+Let the first line come infinitely close to the second:
 
-It's important to note that is process can be repeated for any number of lines. If, in the process of wrapping a DD path, we intersect a second path wrapping the same path, we can then _wrap the second path_ too, recursively wrapping whatever gets in our way.
+![](https://i.gyazo.com/13e951a857f48b90805283fbba9ee02c.png)
+
+Hug the wall of the second line until the point of intersection:
+
+![](https://i.gyazo.com/1327e813b0027b27f1d26f7985bdc23c.png)
+
+We can prove that wrapping will _always_ turn a path intersecting a DD path into a non-intersecting path through this method. Since lines have zero width, no matter how many lines we have running between a disjoint point and a border, we'll always have enough space to wrap
+
+It's important to note that is process can be repeated for any number of lines. If, in the process of wrapping a DD path, we intersect a second path wrapping the same path, we can then _wrap the second path_ too, recursively wrapping whatever gets in our way. Here's a pretty visualization of the process
+
+Effectively, we've proven that we can _ignore_ any DD points in our problem set.
