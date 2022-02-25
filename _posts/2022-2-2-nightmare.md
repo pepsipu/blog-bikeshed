@@ -1,8 +1,8 @@
 ---
 
 layout: post
-title: "Novel Exploitation Tactics By Attacking the Runtime Loader: Nightmare"
-description: "In this write-up, we'll discuss how to go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base."
+title: "Nightmare: Novel Exploitation Tactics With One Byte Write."
+description: "Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base."
 tags: [ctf]
 
 ---
