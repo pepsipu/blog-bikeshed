@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "National Cyber League: A Serious Critique"
+title: "National Cyber League: A Serious Critique."
 description: "A list of problems for Cyber Skyline to resolve."
 tags: [ctf]
 
