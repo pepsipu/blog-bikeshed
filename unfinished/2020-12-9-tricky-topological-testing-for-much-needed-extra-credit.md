@@ -11,11 +11,11 @@ As an occasional Instagram doomscroller, I've encountered this sort of ad more t
 
 Although I love the disingenuity of corporations exploiting the concept of "nerd sniping" to boost consumer engagement and downloads, they're definitely a little late to the party.
 
-![](https://imgs.xkcd.com/comics/nerd_sniping.png)
+![Nerd sniping](https://imgs.xkcd.com/comics/nerd_sniping.png)
 
 An Instagram ad certianly wasn't enough to send me down the rabbit hole of topology and complex analysis, but recently, in my math class, we were given the following problem for one point of extra credit.
 
-![problem](https://i.gyazo.com/fdf711d47f045628ca7c5edfc5deb617.png)
+![Math problem](https://i.gyazo.com/fdf711d47f045628ca7c5edfc5deb617.png)
 
 <small>_Can you connect each pair of dots without passing through the box or other connections?_</small>
 
@@ -27,7 +27,7 @@ There's too many questions with not many answers, so let's dive right in.
 
 The first step with any puzzle is to play with it. Let's try some weirder surfaces and make some observations.
 
-![lol](https://i.gyazo.com/6d9937e9287082c1e22012f739897499.png)
+![Horseshoe diagram](https://i.gyazo.com/6d9937e9287082c1e22012f739897499.png)
 
 Let's take a look at this croissant looking shape. There's a few things to notice here:
 
@@ -35,7 +35,8 @@ Let's take a look at this croissant looking shape. There's a few things to notic
 - Yellow looks even easier.
 - Dots on the border just look.. plain harder to connect.
 - If our croissant looked like this, not much would change.
-  ![lol](https://i.gyazo.com/dee83fd8d62dd7f29b4be3839d70639c.png)
+
+![Modified horseshoe diagram](https://i.gyazo.com/dee83fd8d62dd7f29b4be3839d70639c.png)
 
 From our recorded observations, there's two notable takeaways:
 
@@ -102,12 +103,11 @@ Let's make this property rigorous. We'll need to classify our point pairs, so le
 - In the second case, one point is on the surface boundary and the second is off it. Let's call these points conjoint-disjoint, or CD. Without loss of generality, we can assume that CD = DC, since the point pairs are reflexive.
 - In the last case, both points are off the surface boundary. They'll be called disjoint-disjoint, or DD.
 
-### Disjoint-Disjoint Solving: The Minimum Spanning Tree
+## Disjoint-Disjoint Solving: The Spanning Tree
 
 Let's explore the DD points first. As seen in the example above, they seem to affect solvability signficantly less than CC points, and probably CD points by extension.
 
 One property we noted of DD connections was the ability to "wrap" potentially blocking paths: A DD pair's path may cross over another DD pair's path, but one of the paths may always be "wrapped" around the other in order to fix the intersection.
-
 What would happen if, for every DD pair, we drew a straight line connecting both points, wrapping the path around every other DD pair path in it's way? Well, we'd end up with a rather interesting construction. Let's take a closer look.
 
 Consider the following problem set.
@@ -130,4 +130,21 @@ Although this idea of "wrapping" is cool and all, it's by no means rigorous. Can
 
 Yes! First, we'll need to analyze the DD tree further and establish some properties, which we can then use for the proof.
 
-First, the DD tree will never intersect the border. Because lines have no width, the closest the the DD tree will ever be to the border is whatever DD point happens to be closest.
+[comment]: # "It's worth noting that the DD tree will never intersect the border. Because lines have no width, the closest the the DD tree will ever be to the border is whatever DD point happens to be closest. This means the only way a DD tree can somehow be invalid is through intersection with a path."
+
+todo, fix all wrong because you need two different paths, one for left one for right
+
+### The DD Tree: Graph Theory Edition
+
+Now, let's leverage some graph theory. The process we've been calling "wrapping" is just pathfinding on the graph of interconnected intersection points and DD pairs.
+
+![DD Tree](https://i.gyazo.com/8dc9387847c2a97bc306010415248e64.png)
+
+<small>_Previous problem set as a graph. the prefix "I" means intersection, all other prefixes are the first letter of the corresponding color._</small>
+
+What does drawing a wrapped path on DD tree mean in terms of the graph? Well, we're essentially constructing a path which
+
+The DD tree is a _[spanning tree](https://en.wikipedia.org/wiki/Spanning_tree)_ of the graph of intersections and points of all DD pairs. Let's prove this with the two critera of spanning trees.
+
+- Removing any edge would break the graph. There are only two types of connections: Intersections to other intersections, and an intersection to a DD point. Let's consider both edges. Because DD points are only connected to the graph through one intersection point by construction, they'll break the graph if you remove that edge. In the second case, because intersection points can only connect to at most two other intersection points because points on a line can have either 1 or 2 neighbors. Of course, removing an edge from an intersection to an intersection is the same as breaking a line into two pieces.
+- Adding an edge would create a cycle. Because all nodes are connected to the single graph, adding an edge between any of them must be a redundant edge.
