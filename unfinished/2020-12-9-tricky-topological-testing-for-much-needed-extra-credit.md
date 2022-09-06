@@ -9,7 +9,7 @@ As an occasional Instagram doomscroller, I've encountered this sort of ad more t
 
 <img src="https://i.redd.it/uiksegu951n81.jpg" width="200"/>
 
-Although I love the disingenuity of more corporations exploiting "nerd sniping" to boost consumer engagement and downloads, they're definitely a little late to the party.
+Although I love the disingenuity of corporations exploiting the concept of "nerd sniping" to boost consumer engagement and downloads, they're definitely a little late to the party.
 
 ![](https://imgs.xkcd.com/comics/nerd_sniping.png)
 
@@ -54,7 +54,7 @@ The answer, surprisingly, lies deep within the realm of complex analysis. Let's 
 
 _Theorem: If point pairs P are solvable on a proper non-empty simply connected open subset of C, P is solvable on **every** proper non-empty simply connected open subset of C._
 
-Woah, bold claim, I know. Essentially, what we're saying if we can draw the P's solution on one surface, it implies we can draw P's solution on any surface! Well, how is this possible?
+Woah, bold claim, I know. Essentially, what we're saying is if we can draw the P's solution on one surface, it implies we can draw P's solution on any surface! Well, how is this possible?
 
 Let's make the question more rigorous. What we're essentially saying is that there exists some transformation from from S1 to S2 such that non-intersecting curves drawn on S1 _stay_ non-intersecting after the transformation. How do we prove this?
 
@@ -102,42 +102,32 @@ Let's make this property rigorous. We'll need to classify our point pairs, so le
 - In the second case, one point is on the surface boundary and the second is off it. Let's call these points conjoint-disjoint, or CD. Without loss of generality, we can assume that CD = DC, since the point pairs are reflexive.
 - In the last case, both points are off the surface boundary. They'll be called disjoint-disjoint, or DD.
 
-As we discussed, some point pairs have the property that we can go _around_ their path. For DD pairs, since both points are not attached to the surface boundary, any pair P's connection that _would_ pass through a DD pair's connection can be wrapped around the path, like so:
-![](https://i.gyazo.com/98444cd9d6020ee2826587902a039cec.png)
+### Disjoint-Disjoint Solving: The Minimum Spanning Tree
 
-Alright, let's formalize this a bit.
+Let's explore the DD points first. As seen in the example above, they seem to affect solvability signficantly less than CC points, and probably CD points by extension.
 
-_Lemma: DD points do not affect the solvability of a problem set._
+One property we noted of DD connections was the ability to "wrap" potentially blocking paths: A DD pair's path may cross over another DD pair's path, but one of the paths may always be "wrapped" around the other in order to fix the intersection.
 
-We'll prove this by contradiction. First, let's say we have a set of point pairs, P, on a surface S. We can connect all the points P on the surface S without intersection. We'll start by assuming that the addition of D, some DD pair, to P causes the set to be unsolvable on S. Let's show why this is impossible.
+What would happen if, for every DD pair, we drew a straight line connecting both points, wrapping the path around every other DD pair path in it's way? Well, we'd end up with a rather interesting construction. Let's take a closer look.
 
-Draw a straight line between each point in the DD pair. Odds are, you'll intersect some another path between other pairs on the surface with this line. That's ok! The crux in proving that we can "fix" these intersecting paths to not intersect is by designing a "wrapping" algorithm which will "wrap" the intersecting paths around the DD pair's path.
+Consider the following problem set.
 
-This is _very_ confusing, so here's an example generated with a program
+![DD unconnected problem set](https://i.gyazo.com/d08b2f762626501ae6d47b978cb863c3.png)
 
-Let's design this algorithm. First, consider two intersecting paths.
-![](https://i.gyazo.com/225453c8cb414ab467a6044c5e3ba910.png)
+We can start by drawing every straight line, completely ignoring intersection.
 
-_Red is a DD pair, blue is some path_
+![DD connected intersecting line](https://i.gyazo.com/fa0633723f63d9cfa3fc0b448d101e59.png)
 
-This is no good! How can we "fix" the blue line? Well, since it's a DD pair and there's a finite amount of space between the point and the border, maybe we can curl the blue line around the red one? If we bring the blue line super close to the red one, infinitely close, then hug the red line all the way around the line, all the way back to the point of intersection, we'll be able to fix a line. It's a confusing process, so it'll make more sense with a visual.
+Not too interesting. Let's try fixing these intersections with iterated wrapping.
 
-Let the first line come infinitely close to the second:
+![DD connected wrapped](https://i.gyazo.com/55e74f4095295355c0ce0df142e1e955.png)
 
-![](https://i.gyazo.com/13e951a857f48b90805283fbba9ee02c.png)
+Interesting! Although this is a valid solution to this set of DD points, the image itself is a little misleading. Here, using my imperfect trackpad skills, I've drawn the lines with a bit of width and spacing. In reality, lines have no width and wouldn't be spaced apart at all. If we remove the color and consider what it would look like in the limiting case, it would look more like this.
 
-Hug the wall of the second line until the point of intersection:
+![DD connected wrapped limit](https://i.gyazo.com/4dffaefab18225ba6424968aa7725afb.png)
 
-![](https://i.gyazo.com/1327e813b0027b27f1d26f7985bdc23c.png)
+Although this idea of "wrapping" is cool and all, it's by no means rigorous. Can we prove this structure, which we'll call the DD tree, is always constructable?
 
-We can prove that wrapping will _always_ turn a path intersecting a DD path into a non-intersecting path through this method. Since lines have zero width, no matter how many lines we have running between a disjoint point and a border, we'll always have enough space to wrap.
+Yes! First, we'll need to analyze the DD tree further and establish some properties, which we can then use for the proof.
 
-It's important to note that is process can be repeated for any number of lines. If, in the process of wrapping a DD path, we intersect a second path wrapping the same path, we can then _wrap the second path_ too, recursively wrapping whatever gets in our way. This means that regardless of the current paths drawn on S, the addition of this new pair will _never_ change solvability. By induction, DD pairs can be ignored!
-
-## Point Pairs on the Unit Circle
-
-Now that we've established a method for moving between arbitrary surfaces, let's work on the unit circle. It'll allow us to more clearly work with the CD and DD points, since those depend on the boundary of the surface.
-
-_Lemma: CD points do not affect the solvability of the problem set._
-
-This one's going to be a little trickier to prove! However, we'll use contradiction into induction once again. Let's assume the addition of the CD point does affect the solvability of a problem set.
+First, the DD tree will never intersect the border. Because lines have no width, the closest the the DD tree will ever be to the border is whatever DD point happens to be closest.
