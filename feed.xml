@@ -1,20 +1,58 @@
----
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="https://www.w3.org/2005/Atom" xmlns:dc="https://purl.org/dc/elements/1.1/">
   <channel>
-    <title>{{ site.name | xml_escape }}</title>
-    <description>{% if site.description %}{{ site.description | xml_escape }}{% endif %}</description>
-    <link>{{ site.url }}</link>
-    <atom:link href="{{ page.path | absolute_url }}" rel="self" type="application/rss+xml" />
-    {% for post in site.posts limit:10 %}
+    <title>the pepsi place</title>
+    <description></description>
+    <link>https://blog.pepsipu.com</link>
+    <atom:link href="https://blog.pepsipu.com/feed.xml" rel="self" type="application/rss+xml" />
+    
       <item>
-        <title>{{ post.title | xml_escape }}</title>
-        <description>{{ post.description | xml_escape }}</description>
-        <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-        <link>{{ post.url | absolute_url }}</link>
-        <guid isPermaLink="true">{{ post.url | absolute_url }}</guid>
+        <title>Nightmare: Novel Exploitation Tactics With One Byte Write.</title>
+        <description>Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.</description>
+        <pubDate>Wed, 02 Feb 2022 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/nightmare</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/nightmare</guid>
       </item>
-    {% endfor %}
+    
+      <item>
+        <title>National Cyber League: A Serious Critique.</title>
+        <description>A list of problems for Cyber Skyline to resolve.</description>
+        <pubDate>Sat, 09 Oct 2021 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/a-serious-critique-of-ncl</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/a-serious-critique-of-ncl</guid>
+      </item>
+    
+      <item>
+        <title>Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.</title>
+        <description>Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.</description>
+        <pubDate>Sat, 18 Jul 2020 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/mujs-uiuctf</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/mujs-uiuctf</guid>
+      </item>
+    
+      <item>
+        <title>Albatross: Breaking out of pyjail with your hands tied.</title>
+        <description>Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.</description>
+        <pubDate>Thu, 25 Jun 2020 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/albatross-redpwnctf</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/albatross-redpwnctf</guid>
+      </item>
+    
+      <item>
+        <title>Writing a Physical Memory Manager for Operating Systems</title>
+        <description>Implementing a circular double linked list kernel memory allocator for my latest operating system, dbOS.</description>
+        <pubDate>Sat, 13 Jun 2020 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/pmm-for-oses</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/pmm-for-oses</guid>
+      </item>
+    
+      <item>
+        <title>The Pepsi Place</title>
+        <description>A blog by pepsipu to talk about computer science and IT security.</description>
+        <pubDate>Sun, 03 May 2020 00:00:00 +0000</pubDate>
+        <link>https://blog.pepsipu.com/posts/the-pepsi-place</link>
+        <guid isPermaLink="true">https://blog.pepsipu.com/posts/the-pepsi-place</guid>
+      </item>
+    
   </channel>
 </rss>

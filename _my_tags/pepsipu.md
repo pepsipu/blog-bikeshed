@@ -1,4 +1,0 @@
----
-slug: pepsipu
-name: pepsipu
----

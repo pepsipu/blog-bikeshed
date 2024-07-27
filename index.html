@@ -1,36 +1,342 @@
----
-layout: default
-title: "the pepsi place"
-description: "a blog about computer science & it security"
----
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>the pepsi place | the pepsi place</title>
+  <meta name="description" content="a blog about computer science & it security">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<ul class="article-list">
-  {% for post in paginator.posts %}
-    <li class="article-list-item {% if site.scrollappear_enabled %}scrollappear{% endif %}">
-      <a href="{{ post.url | relative_url }}" title="{{ post.title }}">
+  <meta property="og:title" content="the pepsi place">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://blog.pepsipu.com/">
+  <meta property="og:description" content="a blog about computer science & it security">
+  <meta property="og:site_name" content="the pepsi place">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://blog.pepsipu.com/">
+  <meta name="twitter:title" content="the pepsi place">
+  <meta name="twitter:description" content="a blog about computer science & it security">
+
+  
+    <meta property="og:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+    <meta name="twitter:image" content="https://blog.pepsipu.com/assets/og-image-04fbfc4e15efb2f7c4cde09b072db471162ce6a646dd0d04e1f19eec72491c9b.jpg">
+  
+
+  <link href="https://blog.pepsipu.com/feed.xml" type="application/rss+xml" rel="alternate" title="the pepsi place Last 10 blog posts" />
+
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-dark-11327753546b2135c989eee5cd83497a2734b702928d016839d795f6c706e3d5.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-dark-d161409442b7e523089f24d08d0a55951549ece7504207c376d53b020713494d.png">
+      <link rel="stylesheet" type="text/css" href="/assets/dark-831218bc9e41aef39ee6a0bae4501195bccafcc13101ae2b9cd20493a6ec04c0.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav scrollappear">
+  <a href="/" class="header-logo" title="the pepsi place">the pepsi place</a>
+  <ul class="header-links">
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://github.com/pepsipu" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://instagram.com/sam.hajhamid" rel="noreferrer noopener" target="_blank" title="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-instagram">
+  <use href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram" xlink:href="/assets/instagram-37f85bc75b43ecc4c114d9a46f846327fe13c5893787c6afbcfef9d30d58bd9e.svg#icon-instagram"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:pepsipu@pepsipu.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+
+        <ul class="article-list">
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/nightmare" title="Nightmare: Novel Exploitation Tactics With One Byte Write.">
         <h5>
-          {{ post.title }}
-          {% include svg-icon.html icon="arrow-right" %}
+          Nightmare: Novel Exploitation Tactics With One Byte Write.
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
         </h5>
       </a>
       <p>
-        {% if post.description %}
-          {{ post.description }}
-        {% else %}
-          {{ post.excerpt }}
-        {% endif %}
+        
+          Go from one byte out-of-bounds write to a complete ROP chain without IO access and no brute force under extremely restrictive seccomp, without *ever* knowing ASLR base.
+        
       </p>
-      {% include article/info-footer.html post=post %}
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    February 2, 2022
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+  </div>
+</div>
     </li>
-  {% endfor %}
-  {% if paginator.total_pages > 1 %}
-    <li class="article-pagination {% if site.settings.scrollappear_enabled %}scrollappear{% endif %}">
-      {% if paginator.next_page %}
-        <a href="{{ paginator.next_page_path }}" class="article-pagination-left">{% include svg-icon.html icon="arrow-left" %} Older posts</a>
-      {% endif %}
-      {% if paginator.previous_page %}
-        <a href="{{ paginator.previous_page_path }}" class="article-pagination-right">Newer posts {% include svg-icon.html icon="arrow-right" %}</a>
-      {% endif %}
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/a-serious-critique-of-ncl" title="National Cyber League: A Serious Critique.">
+        <h5>
+          National Cyber League: A Serious Critique.
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
+        </h5>
+      </a>
+      <p>
+        
+          A list of problems for Cyber Skyline to resolve.
+        
+      </p>
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    October 9, 2021
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+  </div>
+</div>
     </li>
-  {% endif %}
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/mujs-uiuctf" title="Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.">
+        <h5>
+          Attacking MuJS: Breaking a JS engine with type confusion and an integer overflow.
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
+        </h5>
+      </a>
+      <p>
+        
+          Writeup to uiuctf's mujs challenge, a javascript pwn challenge were you must pwn the MuJS javascript engine to achieve arbitrary read, write, and code execution.
+        
+      </p>
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    July 18, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+  </div>
+</div>
+    </li>
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/albatross-redpwnctf" title="Albatross: Breaking out of pyjail with your hands tied.">
+        <h5>
+          Albatross: Breaking out of pyjail with your hands tied.
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
+        </h5>
+      </a>
+      <p>
+        
+          Writeup to redpwnctf's Albatross challenge, where you'd need to take advantage of a python 'eval' without using ASCII characters, strings, and no python builtin functions.
+        
+      </p>
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    June 25, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/ctf" title="See all posts with tag 'ctf'">ctf</a>
+    
+      
+      <a href="/tag/misc" title="See all posts with tag ''"></a>
+    
+      
+      <a href="/tag/pyjail" title="See all posts with tag ''"></a>
+    
+  </div>
+</div>
+    </li>
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/pmm-for-oses" title="Writing a Physical Memory Manager for Operating Systems">
+        <h5>
+          Writing a Physical Memory Manager for Operating Systems
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
+        </h5>
+      </a>
+      <p>
+        
+          Implementing a circular double linked list kernel memory allocator for my latest operating system, dbOS.
+        
+      </p>
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    June 13, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/kmalloc" title="See all posts with tag ''"></a>
+    
+      
+      <a href="/tag/heap" title="See all posts with tag ''"></a>
+    
+      
+      <a href="/tag/pmm" title="See all posts with tag ''"></a>
+    
+  </div>
+</div>
+    </li>
+  
+    <li class="article-list-item scrollappear">
+      <a href="/posts/the-pepsi-place" title="The Pepsi Place">
+        <h5>
+          The Pepsi Place
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-arrow-right">
+  <use href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right" xlink:href="/assets/arrow-right-05feb9da52810d15348895a9a885c61803f4d2ae681b4fc442b285fef184dd2b.svg#icon-arrow-right"></use>
+</svg>
+
+        </h5>
+      </a>
+      <p>
+        
+          A blog by pepsipu to talk about computer science and IT security.
+        
+      </p>
+      <div class="article-list-footer">
+  <span class="article-list-date">
+    May 3, 2020
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      
+      <a href="/tag/misc" title="See all posts with tag ''"></a>
+    
+      
+      <a href="/tag/meta" title="See all posts with tag ''"></a>
+    
+  </div>
+</div>
+    </li>
+  
+  
 </ul>
+
+        <footer class="footer scrollappear">
+  <p>
+    sponsored by subpar blue: terrorizing tcaches since 2017
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XQXDK9JQPD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XQXDK9JQPD');
+  </script>
+
+
+<script type="text/javascript" src="/assets/vendor-3ee2c63bbac916f96cd7f90e83ab767f058ead1301444c9966f5156911c8be7f.js"></script>
+
+
+  <script type="text/javascript" src="/assets/webfonts-96493456d319d1bf419afdf8701552d4d486fee6afd304897d4fd81eb4e0cc0b.js"></script>
+
+
+
+  <script type="text/javascript" src="/assets/scrollappear-e2da8ea567e418637e31266cc5302126eaa79f62a2273739086358b589a89ee6.js"></script>
+
+
+<script type="text/javascript" src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js"></script>
+
+
+</body>
+</html>
